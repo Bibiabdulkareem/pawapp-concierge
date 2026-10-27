@@ -35,7 +35,7 @@ label,.qtitle{font-size:13px;font-weight:700}
 .required{color:var(--error)}
 input:not([type=radio]):not([type=checkbox]):not([type=file]),select,textarea{background:#f1f5fa;border:1.4px solid var(--line);border-radius:11px;min-height:44px;width:100%;padding:10px 11px;color:var(--ink);outline:none}
 input::placeholder,textarea::placeholder{color:#8b9aae}
-textarea{min-height:73px;resize:vertical}
+textarea{min-height:73px;resize:vertical}\n#address{min-height:145px;line-height:1.85}\n.perkNote{margin-top:12px;padding:12px 13px;border:1px solid #d0e2f8;border-radius:11px;background:#eff6ff;color:var(--blue);font-size:12px;font-weight:600}\n.options.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 input[type=tel],input[inputmode=numeric]{direction:ltr;text-align:left}
 .help{font-size:11px;font-weight:400;color:var(--muted);margin:0}
 .question{margin-top:17px}
@@ -81,19 +81,24 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:0 18px 24px}
 <div class="field full"><label for="ownerName"><span data-t="ownerName">الاسم الكامل</span> <span class="required">*</span></label><input id="ownerName" name="ownerName" autocomplete="name" maxlength="100" required></div>
 <div class="field"><label for="phone"><span data-t="phone">رقم الهاتف</span> <span class="required">*</span></label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="5XXXXXXX" maxlength="16" required><small class="help" data-t="phoneHelp">رقم كويتي من 8 أرقام</small></div>
 <div class="field"><label for="civilId"><span data-t="civilId">الرقم المدني</span> <span class="required">*</span></label><input id="civilId" name="civilId" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="12 digits" required><small class="help" data-t="civilHelp">12 رقماً</small></div>
-<div class="field"><label for="area"><span data-t="area">المنطقة</span> <span class="required">*</span></label><input id="area" name="area" maxlength="80" required></div>
-<div class="field"><label for="address" data-t="address">عنوان الزيارة (اختياري)</label><input id="address" name="address" maxlength="180"></div>
+<div class="field full"><label for="area"><span data-t="area">المنطقة</span> <span class="required">*</span></label><input id="area" name="area" maxlength="80" required></div>
+<div class="field full"><label for="address"><span data-t="address">العنوان الكامل للزيارة</span> <span class="required">*</span></label><textarea id="address" name="address" rows="5" minlength="12" maxlength="600" data-t-ph="addressPlaceholder" placeholder="المحافظة، المنطقة، القطعة، الشارع، رقم البيت، الدور/الشقة إن وجد" required></textarea><p class="help" data-t="addressHelp">يرجى كتابة العنوان كاملاً. بعد إرسال الطلب، دز لنا اللوكيشن (الموقع) بنفس محادثة الواتساب لتسهيل الوصول.</p></div>
 </div>
 </section>
 <section>
-<div class="heading"><span class="num">2</span><h2 data-t="petHeading">بيانات الحيوان الأليف</h2></div>
+<div class="heading"><span class="num">2</span><h2 data-t="petHeading">بيانات الكلب</h2></div>
 <div class="fields">
-<div class="field"><label for="petName"><span data-t="petName">اسم الحيوان</span> <span class="required">*</span></label><input id="petName" name="petName" maxlength="90" required></div>
-<div class="field"><label for="petType"><span data-t="petType">نوع الحيوان</span> <span class="required">*</span></label><select id="petType" name="petType" required><option value="" data-t="choose">اختر</option><option value="dog" data-t="dog">كلب</option><option value="cat" data-t="cat">قط</option><option value="other" data-t="other">نوع آخر</option></select></div>
-<div class="field full" id="otherPetBox" hidden><label for="otherPet" data-t="otherPet">حدد نوع الحيوان</label><input id="otherPet" name="otherPet" maxlength="70"></div>
-<div class="field"><label for="breed" data-t="breed">السلالة (اختياري)</label><input id="breed" name="breed" maxlength="85"></div>
+<div class="field full"><label for="petName"><span data-t="petName">اسم الكلب</span> <span class="required">*</span></label><input id="petName" name="petName" maxlength="90" required></div>
+<div class="field"><label for="breed" data-t="breed">سلالة الكلب (اختياري)</label><input id="breed" name="breed" maxlength="85"></div>
 <div class="field"><label for="petAge" data-t="age">العمر التقريبي (اختياري)</label><input id="petAge" name="petAge" maxlength="40"></div>
-<div class="field full"><label for="licenseKind"><span data-t="licenseKind">نوع الطلب</span> <span class="required">*</span></label><select id="licenseKind" name="licenseKind" required><option value="" data-t="choose">اختر</option><option value="new" data-t="new">إصدار رخصة جديدة</option><option value="renew" data-t="renew">تجديد الرخصة</option><option value="complete" data-t="complete">استكمال بيانات / متطلبات الرخصة</option></select></div>
+</div>
+<div class="question">
+<span class="qtitle" data-t="petIdQ">هل عندك Pet ID للكلب داخل تطبيق PawApp؟ *</span>
+<div class="options two" role="radiogroup" aria-label="PawApp Pet ID">
+<label><input type="radio" name="petId" value="yes"><span data-t="yes">نعم</span></label>
+<label><input type="radio" name="petId" value="no"><span data-t="no">لا</span></label>
+</div>
+<div class="perkNote" data-t="petIdHelp">⭐ أولوية في تنسيق الحجوزات لعملاء Pet ID، مع خصم خاص لعملاء PawApp اللي عندهم Pet ID.</div>
 </div>
 </section>
 <section>
@@ -101,42 +106,29 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:0 18px 24px}
 <div class="question"><span class="qtitle" data-t="microQ">هل عنده مايكروشيب؟ *</span>
 <div class="options" role="radiogroup" aria-label="Microchip">
 <label><input type="radio" name="micro" value="yes"><span data-t="yes">نعم</span></label><label><input type="radio" name="micro" value="no"><span data-t="no">لا</span></label><label><input type="radio" name="micro" value="unknown"><span data-t="unknown">مو متأكد</span></label>
-</div><div class="field condition" id="microBox" hidden><label for="microNumber"><span data-t="microNumber">رقم المايكروشيب</span> <span class="required">*</span></label><input id="microNumber" name="microNumber" inputmode="numeric" maxlength="30"></div></div>
-<div class="question"><span class="qtitle" data-t="vaccinatedQ">هل عنده كرت تطعيمات / تطعيمات سابقة؟ *</span>
-<div class="options" role="radiogroup" aria-label="Vaccinations">
-<label><input type="radio" name="vaccinated" value="yes"><span data-t="yes">نعم</span></label><label><input type="radio" name="vaccinated" value="no"><span data-t="no">لا</span></label><label><input type="radio" name="vaccinated" value="unknown"><span data-t="unknown">مو متأكد</span></label>
+</div></div>
+<div class="question"><span class="qtitle" data-t="annualQ">هل متطعم التطعيم السنوي؟ *</span>
+<p class="help" data-t="annualHelp">(مع ختم عيادة موثوقة)</p>
+<div class="options" role="radiogroup" aria-label="Annual vaccination">
+<label><input type="radio" name="annual" value="yes"><span data-t="yes">نعم</span></label><label><input type="radio" name="annual" value="no"><span data-t="no">لا</span></label><label><input type="radio" name="annual" value="unknown"><span data-t="unknown">مو متأكد</span></label>
 </div></div>
 <div class="question"><span class="qtitle" data-t="rabiesQ">هل أخذ تطعيم السعار (Rabies)؟ *</span>
 <div class="options" role="radiogroup" aria-label="Rabies vaccine">
 <label><input type="radio" name="rabies" value="yes"><span data-t="yes">نعم</span></label><label><input type="radio" name="rabies" value="no"><span data-t="no">لا</span></label><label><input type="radio" name="rabies" value="unknown"><span data-t="unknown">مو متأكد</span></label>
 </div></div>
-<div class="question"><span class="qtitle" data-t="fleaQ">هل أخذ علاج وقائي للبراغيث والقراد (Flea &amp; Tick)؟ *</span>
-<div class="options" role="radiogroup" aria-label="Flea and tick treatment">
-<label><input type="radio" name="flea" value="yes"><span data-t="yes">نعم</span></label><label><input type="radio" name="flea" value="no"><span data-t="no">لا</span></label><label><input type="radio" name="flea" value="unknown"><span data-t="unknown">مو متأكد</span></label>
-</div><p class="help" data-t="fleaHelp">مثل الحبوب أو القطرات أو الطوق، وهو علاج وقائي وليس تطعيماً.</p></div>
-<div class="question" id="dogVaxBox" hidden><span class="qtitle" data-t="dhppQ">للكلاب: هل أخذ التطعيم المركّب (DHPP / Parvo)؟ *</span>
-<div class="options" role="radiogroup" aria-label="DHPP vaccine">
-<label><input type="radio" name="dhpp" value="yes"><span data-t="yes">نعم</span></label><label><input type="radio" name="dhpp" value="no"><span data-t="no">لا</span></label><label><input type="radio" name="dhpp" value="unknown"><span data-t="unknown">مو متأكد</span></label>
-</div></div>
-<div class="fields" style="margin-top:16px">
-<div class="field"><label for="vaccineDate" data-t="vaccineDate">تاريخ آخر تطعيم (اختياري)</label><input id="vaccineDate" type="date"></div>
-<div class="field"><label for="fleaDate" data-t="fleaDate">تاريخ آخر علاج براغيث (اختياري)</label><input id="fleaDate" type="date"></div>
+<div class="fields" style="margin-top:17px">
+<div class="field full"><label for="vaccineDate" data-t="vaccineDate">تاريخ آخر تطعيم (إذا معروف)</label><input id="vaccineDate" type="date"></div>
 </div>
-<div class="upload"><label for="vaxPhoto" data-t="photo">صورة كرت التطعيم (اختياري)</label>
-<input id="vaxPhoto" type="file" accept="image/*,application/pdf">
-<p class="help" data-t="photoHelp">الصورة لا تُرفع للموقع. بعد فتح واتساب وإرسال الرسالة، أرفقها بنفس المحادثة يدوياً.</p>
-<p class="help" id="chosenPhoto"></p></div>
 </section>
 <section>
-<div class="heading"><span class="num">4</span><h2 data-t="neededHeading">شنو يحتاج الحيوان؟</h2></div>
-<p class="help" data-t="neededHelp">اختار المطلوب أو خل فريق باو أب يراجع بيانات الحيوان معاك.</p>
+<div class="heading"><span class="num">4</span><h2 data-t="neededHeading">شنو يحتاج الكلب؟</h2></div>
+<p class="help" data-t="neededHelp">تقدر تختار أكثر من خدمة حسب احتياج الكلب.</p>
 <div class="checks">
 <label><input type="checkbox" name="needs" value="chip"><span data-t="needChip">مايكروشيب</span></label>
+<label><input type="checkbox" name="needs" value="annual"><span data-t="needAnnual">تطعيم سنوي</span></label>
 <label><input type="checkbox" name="needs" value="rabies"><span data-t="needRabies">تطعيم السعار</span></label>
-<label><input type="checkbox" name="needs" value="flea"><span data-t="needFlea">علاج البراغيث والقراد</span></label>
-<label><input type="checkbox" name="needs" value="vaccine"><span data-t="needVaccine">استكمال التطعيمات الأخرى</span></label>
-<label><input type="checkbox" name="needs" value="license"><span data-t="needLicense">إصدار / تجديد الرخصة</span></label>
-<label><input type="checkbox" name="needs" value="review"><span data-t="needReview">مو متأكد شنو ناقص — أبي مراجعة</span></label>
+<label><input type="checkbox" name="needs" value="checkup"><span data-t="needCheckup">فحص عام</span></label>
+<label><input type="checkbox" name="needs" value="home"><span data-t="needHome">زيارة منزلية</span></label>
 </div>
 </section>
 <section>
@@ -148,10 +140,10 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:0 18px 24px}
 </div>
 <p class="help" data-t="appointmentHelp">الزيارة لا تتأكد إلا بعد التواصل مع العميل والتنسيق مع العيادة.</p>
 </section>
-<section><label class="consent"><input type="checkbox" id="consent" required><span data-t="consent">أوافق على إرسال بياناتي، بما فيها الرقم المدني، إلى شركة باو أب عبر واتساب لغرض متابعة الرخصة وتنسيق الموعد، وأفهم أن السعر والموعد غير مؤكدين حالياً.</span></label>
+<section><label class="consent"><input type="checkbox" id="consent" required><span data-t="consent">أوافق على إرسال بياناتي، بما فيها الرقم المدني، إلى شركة باو أب عبر واتساب لغرض استكمال إجراءات رخصة الكلب وتنسيق الموعد، وأفهم أن السعر والموعد غير مؤكدين حالياً.</span></label>
 <p class="error" id="error" role="alert"></p>
 <button type="submit" class="submit" data-t="send">الانتقال إلى واتساب لإرسال الطلب</button>
-<p class="help" style="margin-top:10px;text-align:center" data-t="sendHelp">يفتح واتساب برسالة جاهزة. اضغط «إرسال» بنفسك لإتمام الطلب.</p>
+<p class="help" style="margin-top:10px;text-align:center" data-t="sendHelp">يفتح واتساب برسالة جاهزة. اضغط «إرسال» بنفسك لإتمام الطلب، وبعدها دز اللوكيشن (الموقع) بنفس المحادثة.</p>
 </section>
 </form>
 <footer>© PawApp — شركة باو أب</footer>
@@ -163,97 +155,86 @@ const WA='96541117003';
 const $=id=>document.getElementById(id);
 const translations={
 en:{
-title:'Pet License — Complete Your Details',
-subtitle:'Share your details and your pet information, and select your preferred date. PawApp will coordinate with a veterinary clinic.',
-notice:'Your selected time is a preference only, not a confirmed appointment. Pricing will be agreed with you later after reviewing your pet’s needs. No payment is collected here.',
-ownerHeading:'Pet owner information',ownerName:'Full name',phone:'Phone number',phoneHelp:'Kuwait number, 8 digits',civilId:'Civil ID',civilHelp:'12 digits',area:'Area',address:'Visit address (optional)',
-petHeading:'Pet information',petName:'Pet name',petType:'Pet type',choose:'Select',dog:'Dog',cat:'Cat',other:'Other',otherPet:'Specify pet type',breed:'Breed (optional)',age:'Approximate age (optional)',licenseKind:'Request type',new:'New license',renew:'Renew license',complete:'Complete license details / requirements',
-healthHeading:'Microchip & health records',microQ:'Does your pet have a microchip? *',yes:'Yes',no:'No',unknown:'Not sure',microNumber:'Microchip number',vaccinatedQ:'Does your pet have vaccination records? *',rabiesQ:'Has your pet received the rabies vaccine? *',fleaQ:'Has your pet received flea & tick prevention? *',fleaHelp:'Such as tablets, spot-on treatment, or collars. This is not a vaccine.',dhppQ:'For dogs: DHPP / Parvo combination vaccine? *',vaccineDate:'Last vaccination date (optional)',fleaDate:'Last flea treatment date (optional)',photo:'Vaccination card photo (optional)',photoHelp:'This file is not uploaded. After you open WhatsApp and send your message, please attach the file manually in the same chat.',
-neededHeading:'What does your pet need?',neededHelp:'Select known needs, or ask PawApp to check the requirements with you.',needChip:'Microchip',needRabies:'Rabies vaccination',needFlea:'Flea & tick treatment',needVaccine:'Other vaccinations',needLicense:'Issue / renew license',needReview:'Not sure — please review',
-dateHeading:'Preferred appointment',visitDate:'Preferred date',visitTime:'Preferred time',notes:'Additional notes (optional)',appointmentHelp:'The appointment is only confirmed after PawApp coordinates with the clinic.',consent:'I agree to share my information, including my Civil ID, with PawApp through WhatsApp for pet licensing and appointment coordination. I understand that price and time are not yet confirmed.',send:'Continue to WhatsApp to send request',sendHelp:'WhatsApp opens with a prepared message. Tap Send yourself to finish your request.',
-errorRequired:'Please fill all required fields and select an answer for every health question.',errorPhone:'Enter a valid 8-digit Kuwait phone number.',errorCivil:'Enter a 12-digit Civil ID.',errorChip:'Enter the microchip number if your pet has one.',errorDate:'Please choose a date starting today.',errorConsent:'Please confirm consent to send your details.'
+title:'Dog License — Complete Your Details',
+subtitle:'Enter your details and your dog’s information, then choose your preferred appointment. PawApp will coordinate with the veterinary clinic.',
+notice:'Your date and time are a request, not a confirmed booking. PawApp will discuss the price with you after reviewing your dog’s needs. No payment is collected here.',
+ownerHeading:'Dog owner information',ownerName:'Full name',phone:'Phone number',phoneHelp:'Kuwait number, 8 digits',civilId:'Civil ID',civilHelp:'12 digits',area:'Area',address:'Full visit address',addressPlaceholder:'Governorate, area, block, street, house number, floor/apartment (if applicable)',addressHelp:'Enter the full address. After sending the WhatsApp message, please share your live location or location pin in the same conversation.',
+petHeading:'Dog information',petName:'Dog name',breed:'Dog breed (optional)',age:'Approximate age (optional)',petIdQ:'Do you have a Pet ID for your dog in the PawApp app? *',petIdHelp:'⭐ Priority in appointment coordination for Pet ID customers, plus a special discount for PawApp customers with Pet ID.',
+healthHeading:'Microchip & vaccinations',microQ:'Does your dog have a microchip? *',yes:'Yes',no:'No',unknown:'Not sure',annualQ:'Has your dog received its annual vaccination? *',annualHelp:'(Stamped by a trusted veterinary clinic)',rabiesQ:'Has your dog received the rabies vaccine? *',vaccineDate:'Date of last vaccination (if known)',
+neededHeading:'What does your dog need?',neededHelp:'You can select more than one service.',needChip:'Microchip',needAnnual:'Annual vaccination',needRabies:'Rabies vaccine',needCheckup:'General check-up',needHome:'Home visit',
+dateHeading:'Preferred appointment',visitDate:'Preferred date',visitTime:'Preferred time',notes:'Additional notes (optional)',appointmentHelp:'Your appointment is confirmed only after PawApp coordinates with the clinic.',consent:'I agree to share my information, including Civil ID, with PawApp via WhatsApp to complete dog licensing and arrange an appointment. I understand that price and timing are not yet confirmed.',send:'Continue to WhatsApp to send request',sendHelp:'WhatsApp opens with a prepared message. Tap Send to finish your request, then share your location in the same chat.',
+errorRequired:'Please fill all required fields and answer all required questions.',errorPhone:'Enter a valid 8-digit Kuwait phone number.',errorCivil:'Enter a 12-digit Civil ID.',errorAddress:'Please enter your complete visit address (block, street and house number).',errorDate:'Please choose a date starting today.',errorConsent:'Please confirm consent to send your details.'
 },
 ar:{
-title:'استكمال بيانات رخصة الحيوان الأليف',subtitle:'عبّ بياناتك وبيانات حيوانك، واختار الوقت المناسب لك. فريق باو أب يتواصل معاك لتنسيق موعدك مع العيادة.',notice:'الموعد المطلوب مبدئي وليس حجزاً مؤكداً. السعر يتم الاتفاق عليه لاحقاً بعد مراجعة احتياجات الحيوان. لا يوجد دفع من خلال النموذج.',
-ownerHeading:'بيانات صاحب الحيوان',ownerName:'الاسم الكامل',phone:'رقم الهاتف',phoneHelp:'رقم كويتي من 8 أرقام',civilId:'الرقم المدني',civilHelp:'12 رقماً',area:'المنطقة',address:'عنوان الزيارة (اختياري)',
-petHeading:'بيانات الحيوان الأليف',petName:'اسم الحيوان',petType:'نوع الحيوان',choose:'اختر',dog:'كلب',cat:'قط',other:'نوع آخر',otherPet:'حدد نوع الحيوان',breed:'السلالة (اختياري)',age:'العمر التقريبي (اختياري)',licenseKind:'نوع الطلب',new:'إصدار رخصة جديدة',renew:'تجديد الرخصة',complete:'استكمال بيانات / متطلبات الرخصة',
-healthHeading:'المايكروشيب والتطعيمات',microQ:'هل عنده مايكروشيب؟ *',yes:'نعم',no:'لا',unknown:'مو متأكد',microNumber:'رقم المايكروشيب',vaccinatedQ:'هل عنده كرت تطعيمات / تطعيمات سابقة؟ *',rabiesQ:'هل أخذ تطعيم السعار (Rabies)؟ *',fleaQ:'هل أخذ علاج وقائي للبراغيث والقراد (Flea & Tick)؟ *',fleaHelp:'مثل الحبوب أو القطرات أو الطوق، وهو علاج وقائي وليس تطعيماً.',dhppQ:'للكلاب: هل أخذ التطعيم المركّب (DHPP / Parvo)؟ *',vaccineDate:'تاريخ آخر تطعيم (اختياري)',fleaDate:'تاريخ آخر علاج براغيث (اختياري)',photo:'صورة كرت التطعيم (اختياري)',photoHelp:'الصورة لا تُرفع للموقع. بعد فتح واتساب وإرسال الرسالة، أرفقها بنفس المحادثة يدوياً.',
-neededHeading:'شنو يحتاج الحيوان؟',neededHelp:'اختار المطلوب أو خل فريق باو أب يراجع بيانات الحيوان معاك.',needChip:'مايكروشيب',needRabies:'تطعيم السعار',needFlea:'علاج البراغيث والقراد',needVaccine:'استكمال التطعيمات الأخرى',needLicense:'إصدار / تجديد الرخصة',needReview:'مو متأكد شنو ناقص — أبي مراجعة',
-dateHeading:'الموعد المفضل',visitDate:'التاريخ المفضل',visitTime:'الوقت المفضل',notes:'ملاحظات (اختياري)',appointmentHelp:'الزيارة لا تتأكد إلا بعد التواصل مع العميل والتنسيق مع العيادة.',consent:'أوافق على إرسال بياناتي، بما فيها الرقم المدني، إلى شركة باو أب عبر واتساب لغرض متابعة الرخصة وتنسيق الموعد، وأفهم أن السعر والموعد غير مؤكدين حالياً.',send:'الانتقال إلى واتساب لإرسال الطلب',sendHelp:'يفتح واتساب برسالة جاهزة. اضغط «إرسال» بنفسك لإتمام الطلب.',
-errorRequired:'يرجى استكمال الحقول المطلوبة والإجابة على أسئلة التطعيمات.',errorPhone:'يرجى إدخال رقم هاتف كويتي صحيح من 8 أرقام.',errorCivil:'يرجى إدخال الرقم المدني المكوّن من 12 رقماً.',errorChip:'يرجى إدخال رقم المايكروشيب عند اختيار نعم.',errorDate:'اختار تاريخ اليوم أو تاريخ لاحق.',errorConsent:'يجب الموافقة على إرسال البيانات.'
+title:'استكمال بيانات رخصة الكلاب',subtitle:'عبّ بياناتك وبيانات كلبك، واختار الموعد المفضل. فريق باو أب يتواصل معاك لتنسيق الزيارة مع العيادة.',
+notice:'الموعد المطلوب مبدئي وليس حجزاً مؤكداً. السعر يتم الاتفاق عليه لاحقاً بعد مراجعة احتياجات الكلب. لا يوجد دفع من خلال النموذج.',
+ownerHeading:'بيانات صاحب الكلب',ownerName:'الاسم الكامل',phone:'رقم الهاتف',phoneHelp:'رقم كويتي من 8 أرقام',civilId:'الرقم المدني',civilHelp:'12 رقماً',area:'المنطقة',address:'العنوان الكامل للزيارة',addressPlaceholder:'المحافظة، المنطقة، القطعة، الشارع، رقم البيت، الدور/الشقة إن وجد',addressHelp:'يرجى كتابة العنوان كاملاً. بعد إرسال الطلب، دز لنا اللوكيشن (الموقع) بنفس محادثة الواتساب لتسهيل الوصول.',
+petHeading:'بيانات الكلب',petName:'اسم الكلب',breed:'سلالة الكلب (اختياري)',age:'العمر التقريبي (اختياري)',petIdQ:'هل عندك Pet ID للكلب داخل تطبيق PawApp؟ *',petIdHelp:'⭐ أولوية في تنسيق الحجوزات لعملاء Pet ID، مع خصم خاص لعملاء PawApp اللي عندهم Pet ID.',
+healthHeading:'المايكروشيب والتطعيمات',microQ:'هل عنده مايكروشيب؟ *',yes:'نعم',no:'لا',unknown:'مو متأكد',annualQ:'هل متطعم التطعيم السنوي؟ *',annualHelp:'(مع ختم عيادة موثوقة)',rabiesQ:'هل أخذ تطعيم السعار (Rabies)؟ *',vaccineDate:'تاريخ آخر تطعيم (إذا معروف)',
+neededHeading:'شنو يحتاج الكلب؟',neededHelp:'تقدر تختار أكثر من خدمة حسب احتياج الكلب.',needChip:'مايكروشيب',needAnnual:'تطعيم سنوي',needRabies:'تطعيم السعار',needCheckup:'فحص عام',needHome:'زيارة منزلية',
+dateHeading:'الموعد المفضل',visitDate:'التاريخ المفضل',visitTime:'الوقت المفضل',notes:'ملاحظات (اختياري)',appointmentHelp:'الزيارة لا تتأكد إلا بعد التواصل مع العميل والتنسيق مع العيادة.',consent:'أوافق على إرسال بياناتي، بما فيها الرقم المدني، إلى شركة باو أب عبر واتساب لغرض استكمال إجراءات رخصة الكلب وتنسيق الموعد، وأفهم أن السعر والموعد غير مؤكدين حالياً.',send:'الانتقال إلى واتساب لإرسال الطلب',sendHelp:'يفتح واتساب برسالة جاهزة. اضغط «إرسال» بنفسك لإتمام الطلب، وبعدها دز اللوكيشن (الموقع) بنفس المحادثة.',
+errorRequired:'يرجى استكمال الحقول المطلوبة والإجابة على الأسئلة.',errorPhone:'يرجى إدخال رقم هاتف كويتي صحيح من 8 أرقام.',errorCivil:'يرجى إدخال الرقم المدني المكوّن من 12 رقماً.',errorAddress:'يرجى كتابة العنوان الكامل (القطعة والشارع ورقم المنزل).',errorDate:'اختار تاريخ اليوم أو تاريخ لاحق.',errorConsent:'يجب الموافقة على إرسال البيانات.'
 }};
 let lang='ar';
 function setLang(next){
 lang=next;document.documentElement.lang=next;document.documentElement.dir=next==='ar'?'rtl':'ltr';
-document.querySelectorAll('[data-t]').forEach(el=>{let k=el.getAttribute('data-t');if(translations[next][k])el.textContent=translations[next][k]});
+document.querySelectorAll('[data-t]').forEach(el=>{const k=el.getAttribute('data-t');if(translations[next][k])el.textContent=translations[next][k]});
+document.querySelectorAll('[data-t-ph]').forEach(el=>{const k=el.getAttribute('data-t-ph');if(translations[next][k])el.placeholder=translations[next][k]});
 $('switchLang').textContent=next==='ar'?'English':'العربية';$('error').classList.remove('active');
 }
 $('switchLang').addEventListener('click',()=>setLang(lang==='ar'?'en':'ar'));
-const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-$('visitDate').min=today();$('vaccineDate').max=today();$('fleaDate').max=today();
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+$('visitDate').min=today();$('vaccineDate').max=today();
 function selected(n){return document.querySelector('input[name="'+n+'"]:checked')?.value||''}
-$('petType').addEventListener('change',()=>{
-let dog=$('petType').value==='dog',other=$('petType').value==='other';
-$('dogVaxBox').hidden=!dog;$('otherPetBox').hidden=!other;
-if(!dog)document.querySelectorAll('input[name="dhpp"]').forEach(x=>x.checked=false);
-if(!other)$('otherPet').value='';
-});
-document.querySelectorAll('input[name="micro"]').forEach(el=>el.addEventListener('change',()=>{$('microBox').hidden=selected('micro')!=='yes';if($('microBox').hidden)$('microNumber').value=''}));
-$('vaxPhoto').addEventListener('change',()=>{$('chosenPhoto').textContent=$('vaxPhoto').files[0]?.name||''});
 function showError(key,focus){
-$('error').textContent=translations[lang][key];$('error').classList.add('active');
-if(focus)focus.focus();$('error').scrollIntoView({block:'center',behavior:'smooth'});
+$('error').textContent=translations[lang][key];$('error').classList.add('active');if(focus)focus.focus();$('error').scrollIntoView({block:'center',behavior:'smooth'});
 }
-const val=id=>$ (id).value.trim();
+const val=id=>$(id).value.trim();
 const clean=v=>String(v||'').replace(/[\r\n]+/g,' ').trim();
 const names={
-ar:{yes:'نعم',no:'لا',unknown:'مو متأكد',dog:'كلب',cat:'قط',other:'أخرى',new:'إصدار جديد',renew:'تجديد',complete:'استكمال متطلبات',chip:'مايكروشيب',rabies:'تطعيم السعار',flea:'علاج البراغيث والقراد',vaccine:'تطعيمات أخرى',license:'إصدار/تجديد الرخصة',review:'مراجعة المتطلبات',none:'لم يحدد',photoYes:'سيتم إرسال صورة كرت التطعيم كملف منفصل في المحادثة',photoNo:'لم تُرفق صورة'},
-en:{yes:'Yes',no:'No',unknown:'Unsure',dog:'Dog',cat:'Cat',other:'Other',new:'New',renew:'Renewal',complete:'Complete requirements',chip:'Microchip',rabies:'Rabies vaccine',flea:'Flea & tick treatment',vaccine:'Other vaccines',license:'License issue/renewal',review:'Review requirements',none:'Not specified',photoYes:'Customer will attach vaccination card separately in this chat',photoNo:'No card selected'}};
+ar:{yes:'نعم',no:'لا',unknown:'مو متأكد',chip:'مايكروشيب',annual:'تطعيم سنوي',rabies:'تطعيم السعار',checkup:'فحص عام',home:'زيارة منزلية',none:'لم يتم تحديد خدمات'},
+en:{yes:'Yes',no:'No',unknown:'Not sure',chip:'Microchip',annual:'Annual vaccination',rabies:'Rabies vaccine',checkup:'General check-up',home:'Home visit',none:'No services selected'}
+};
 $('form').addEventListener('submit',function(e){
 e.preventDefault();$('error').classList.remove('active');
-let required=['ownerName','phone','civilId','area','petName','petType','licenseKind','visitDate','visitTime'];
-for(let id of required){if(!val(id)){showError('errorRequired',$(id));return}}
-if($('petType').value==='other'&&!val('otherPet')){showError('errorRequired',$('otherPet'));return}
-for(let group of ['micro','vaccinated','rabies','flea',...($('petType').value==='dog'?['dhpp']:[])]){if(!selected(group)){showError('errorRequired');return}}
-let phone=val('phone').replace(/[\s+\-()]/g,'').replace(/^965/,'');
+for(const id of ['ownerName','phone','civilId','area','address','petName','visitDate','visitTime']){if(!val(id)){showError('errorRequired',$(id));return}}
+if(val('address').length<12){showError('errorAddress',$('address'));return}
+for(const group of ['petId','micro','annual','rabies']){if(!selected(group)){showError('errorRequired');return}}
+const phone=val('phone').replace(/[\s+\-()]/g,'').replace(/^965/,'');
 if(!/^[0-9]{8}$/.test(phone)){showError('errorPhone',$('phone'));return}
 if(!/^\d{12}$/.test(val('civilId'))){showError('errorCivil',$('civilId'));return}
-if(selected('micro')==='yes'&&!val('microNumber')){showError('errorChip',$('microNumber'));return}
 if(val('visitDate')<today()){showError('errorDate',$('visitDate'));return}
 if(!$('consent').checked){showError('errorConsent',$('consent'));return}
-let t=names[lang],need=[...document.querySelectorAll('input[name="needs"]:checked')].map(x=>t[x.value]);
-let pet=t[$('petType').value]+($('petType').value==='other'?' ('+clean(val('otherPet'))+')':'');
-const yesno=k=>t[selected(k)];
+const t=names[lang];
+const need=[...document.querySelectorAll('input[name="needs"]:checked')].map(x=>t[x.value]);
+const yn=k=>t[selected(k)];
 const date=v=>v||'-';
-const msg=lang==='ar'?[
-'🐾 *شركة باو أب | طلب استكمال رخصة حيوان أليف*',
+const msg=(lang==='ar'?[
+'🐾 *شركة باو أب | طلب استكمال رخصة كلب*',
 '',
-'*بيانات صاحب الحيوان*',
+'*بيانات صاحب الكلب*',
 'الاسم: '+clean(val('ownerName')),
 'الهاتف: +965 '+phone,
 'الرقم المدني: '+val('civilId'),
 'المنطقة: '+clean(val('area')),
-'عنوان الزيارة: '+(clean(val('address'))||'-'),
+'العنوان الكامل للزيارة: '+clean(val('address')),
+'📍 سأرسل اللوكيشن (الموقع) بنفس محادثة واتساب.',
 '',
-'*بيانات الحيوان*',
-'اسم الحيوان: '+clean(val('petName')),
-'النوع: '+pet,
+'*بيانات الكلب*',
+'اسم الكلب: '+clean(val('petName')),
+'النوع: كلب',
 'السلالة: '+(clean(val('breed'))||'-'),
 'العمر: '+(clean(val('petAge'))||'-'),
-'نوع الطلب: '+t[$('licenseKind').value],
+'هل عنده Pet ID في PawApp؟ '+yn('petId'),
+...(selected('petId')==='yes'?['⭐ عميل Pet ID — أولوية الحجز والخصم الخاص']:[]),
 '',
-'*البيانات الطبية*',
-'مايكروشيب: '+yesno('micro'),
-'رقم المايكروشيب: '+(selected('micro')==='yes'?val('microNumber'):'-'),
-'كرت / تطعيمات سابقة: '+yesno('vaccinated'),
-'السعار Rabies: '+yesno('rabies'),
-'وقاية البراغيث والقراد: '+yesno('flea'),
-...($('petType').value==='dog'?['تطعيم DHPP / Parvo: '+yesno('dhpp')]:[]),
+'*التطعيمات والمايكروشيب*',
+'مايكروشيب: '+yn('micro'),
+'تطعيم سنوي (ختم عيادة موثوقة): '+yn('annual'),
+'تطعيم السعار Rabies: '+yn('rabies'),
 'تاريخ آخر تطعيم: '+date(val('vaccineDate')),
-'تاريخ آخر علاج براغيث: '+date(val('fleaDate')),
-'كرت التطعيم: '+($('vaxPhoto').files.length?t.photoYes:t.photoNo),
 '',
-'*المطلوب استكماله*',
+'*الخدمات المطلوبة*',
 need.length?need.join('، '):t.none,
 '',
 '*الموعد المطلوب (بانتظار التأكيد)*',
@@ -261,28 +242,42 @@ need.length?need.join('، '):t.none,
 'الوقت: '+val('visitTime'),
 'ملاحظات: '+(clean(val('notes'))||'-'),
 '',
-'الرجاء التواصل معي لتأكيد الموعد والرسوم.'
+'الرجاء التواصل معي لتأكيد الموعد والسعر.'
 ]:[
-'🐾 *PawApp | Pet License Information Request*','','*Owner*',
-'Name: '+clean(val('ownerName')),'Phone: +965 '+phone,'Civil ID: '+val('civilId'),
-'Area: '+clean(val('area')),'Visit address: '+(clean(val('address'))||'-'),
-'','*Pet*','Name: '+clean(val('petName')),'Species: '+pet,
-'Breed: '+(clean(val('breed'))||'-'),'Age: '+(clean(val('petAge'))||'-'),
-'Request: '+t[$('licenseKind').value],
-'','*Health records*','Microchip: '+yesno('micro'),
-'Chip number: '+(selected('micro')==='yes'?val('microNumber'):'-'),
-'Previous vaccinations: '+yesno('vaccinated'),
-'Rabies: '+yesno('rabies'),'Flea & tick prevention: '+yesno('flea'),
-...($('petType').value==='dog'?['DHPP / Parvo: '+yesno('dhpp')]:[]),
-'Last vaccination: '+date(val('vaccineDate')),
-'Last flea treatment: '+date(val('fleaDate')),
-'Vaccination card: '+($('vaxPhoto').files.length?t.photoYes:t.photoNo),
-'','*Needed*',need.length?need.join(', '):t.none,
-'','*Requested appointment (not yet confirmed)*',
-'Date: '+val('visitDate'),'Time: '+val('visitTime'),
+'🐾 *PawApp | Dog License Request*',
+'',
+'*Owner information*',
+'Name: '+clean(val('ownerName')),
+'Phone: +965 '+phone,
+'Civil ID: '+val('civilId'),
+'Area: '+clean(val('area')),
+'Full visit address: '+clean(val('address')),
+'📍 I will share the location pin in this WhatsApp chat.',
+'',
+'*Dog information*',
+'Dog name: '+clean(val('petName')),
+'Species: Dog',
+'Breed: '+(clean(val('breed'))||'-'),
+'Age: '+(clean(val('petAge'))||'-'),
+'PawApp Pet ID: '+yn('petId'),
+...(selected('petId')==='yes'?['⭐ Pet ID customer — booking priority and special discount']:[]),
+'',
+'*Vaccinations and microchip*',
+'Microchip: '+yn('micro'),
+'Annual vaccination (trusted clinic stamp): '+yn('annual'),
+'Rabies vaccine: '+yn('rabies'),
+'Last vaccination date: '+date(val('vaccineDate')),
+'',
+'*Services requested*',
+need.length?need.join(', '):t.none,
+'',
+'*Preferred appointment (pending confirmation)*',
+'Date: '+val('visitDate'),
+'Time: '+val('visitTime'),
 'Notes: '+(clean(val('notes'))||'-'),
-'','Please contact me to confirm timing and pricing.'
-].join('\n');
+'',
+'Please contact me to confirm the appointment and price.'
+]).join('\n');
 window.location.href='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
 });
 })();
