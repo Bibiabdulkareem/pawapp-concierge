@@ -200,7 +200,8 @@ const names={
 ar:{yes:'نعم',no:'لا',unknown:'مو متأكد',chip:'مايكروشيب',annual:'تطعيم سنوي',rabies:'تطعيم السعار',checkup:'فحص عام',home:'زيارة منزلية',none:'لم يتم تحديد خدمات'},
 en:{yes:'Yes',no:'No',unknown:'Not sure',chip:'Microchip',annual:'Annual vaccination',rabies:'Rabies vaccine',checkup:'General check-up',home:'Home visit',none:'No services selected'}
 };
-$('form').addEventListener('submit',function(e){
+const intakeRequestId=crypto.randomUUID();
+$('form').addEventListener('submit',async function(e){
 e.preventDefault();$('error').classList.remove('active');
 for(const id of ['ownerName','phone','civilId','area','address','petName','visitDate','visitTime']){if(!val(id)){showError('errorRequired',$(id));return}}
 if(val('address').length<12){showError('errorAddress',$('address'));return}
@@ -288,7 +289,48 @@ const msgRows=lang==='ar'?[
 '💬 We will contact the customer to confirm the appointment and pricing.'
 ];
 const msg=msgRows.join(String.fromCharCode(10));
-window.location.href='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
+const btn=$('form').querySelector('button[type="submit"]');
+const originalText=btn.textContent;
+btn.disabled=true;
+btn.textContent=lang==='ar'?'جاري تسجيل الطلب...':'Saving request...';
+try{
+  const payload={
+    request_id:intakeRequestId,
+    owner_name:val('ownerName'),
+    phone:phone,
+    civil_id:val('civilId'),
+    area:val('area'),
+    address:val('address'),
+    pet_name:val('petName'),
+    pet_age:val('petAge'),
+    breed:val('breed'),
+    has_pet_id:selected('petId'),
+    microchipped:selected('micro'),
+    annual_vaccination:selected('annual'),
+    rabies_vaccination:selected('rabies'),
+    vaccination_date:val('vaccineDate'),
+    visit_date:val('visitDate'),
+    visit_time:val('visitTime'),
+    requested_service:'استكمال بيانات حيوان أليف',
+    requested_services:need,
+    notes:(lang==='ar'?'الخدمات المطلوبة: ':'Requested services: ')+(need.join('، ')||t.none)+'\n'+val('notes'),
+    request_language:lang
+  };
+  const response=await fetch('https://faireklbtnbcvvgiyyxd.supabase.co/functions/v1/crm-live-pet-information',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+  const saved=await response.json();
+  if(!response.ok||!saved.ok||!saved.case_id)throw new Error('save_failed');
+  window.location.href='https://wa.me/'+WA+'?text='+encodeURIComponent(msg+'\n\nPawApp Case: PAW-'+String(saved.case_id).padStart(4,'0'));
+}catch(err){
+  const error=$('error');
+  error.textContent=lang==='ar'?'تعذر تسجيل الطلب حالياً. لم يتم فتح واتساب، يرجى المحاولة مجدداً.':'Could not save your request. WhatsApp was not opened; please retry.';
+  error.classList.add('active');
+}finally{
+  btn.disabled=false;
+  btn.textContent=originalText;
+}
 });
 })();
 </script>

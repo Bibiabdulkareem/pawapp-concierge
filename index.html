@@ -597,17 +597,53 @@
     return L.join('\n');
   }
 
-  $('#form').addEventListener('submit',function(e){
+  var intakeRequestId=crypto.randomUUID();
+  $('#form').addEventListener('submit',async function(e){
     e.preventDefault();
     if(!validate()) return;
-    var text=buildMsg();
-    var url='https://wa.me/'+WA+'?text='+encodeURIComponent(text);
-    window.open(url,'_blank');
-    $('#waLink').href=url;
-    $('#summary').textContent=text;
-    $('#form').hidden=true;
-    $('#done').hidden=false;
-    $('.wrap').scrollIntoView({behavior:'smooth',block:'start'});
+    var btn=$('#form button[type="submit"]');
+    var originalText=btn.textContent;
+    btn.disabled=true;
+    btn.textContent=lang==='ar'?'جاري تسجيل الطلب...':'Saving your request...';
+    try{
+      var payload={
+        request_id:intakeRequestId,
+        client_name:$('#name').value.trim(),
+        client_phone:$('#phone').value.trim(),
+        requested_service:state.service,
+        location:$('#location').value.trim(),
+        pet_type:state.petType,
+        breed:$('#breed').value.trim(),
+        pet_age:$('#age').value.trim(),
+        pet_friendly:state.friendly==='yes',
+        reason:$('#reason').value.trim(),
+        vaccinated:state.vaccinated==='yes',
+        microchipped:state.microchipped==='yes',
+        has_pet_id:state.petId==='yes',
+        preferred_date:$('#date').value,
+        emergency:state.service==='vet-consult'&&$('#emergency').checked,
+        notes:$('#notes').value.trim(),
+        request_language:lang
+      };
+      var resp=await fetch('https://faireklbtnbcvvgiyyxd.supabase.co/functions/v1/crm-live-booking',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+      var saved=await resp.json();
+      if(!resp.ok||!saved.ok||!saved.case_id)throw new Error('save_failed');
+      var text=buildMsg()+'\n\nPawApp Case: PAW-'+String(saved.case_id).padStart(4,'0');
+      var url='https://wa.me/'+WA+'?text='+encodeURIComponent(text);
+      $('#waLink').href=url;
+      $('#summary').textContent=text;
+      $('#form').hidden=true;
+      $('#done').hidden=false;
+      window.location.href=url;
+    }catch(err){
+      alert(lang==='ar'?'تعذر تسجيل الطلب حالياً. لم يتم فتح واتساب. جربي مرة ثانية.':'Could not save your booking. WhatsApp was not opened. Please retry.');
+    }finally{
+      btn.disabled=false;
+      btn.textContent=originalText;
+    }
   });
   $('#editBtn').addEventListener('click',function(){ $('#done').hidden=true; $('#form').hidden=false; });
 })();
