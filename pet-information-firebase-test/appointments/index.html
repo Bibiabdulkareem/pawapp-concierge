@@ -25,11 +25,23 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <main>
 <div class="notice">🧪 هذه نسخة اختبار Firebase فقط. لا تستخدمي بيانات حقيقية قبل اعتماد الأمان. نموذج العملاء الأصلي وConcierge LIVE وCRM TEST لم يتغيروا.</div>
 <section id="loginBox" class="box">
-<h2>لوحة المواعيد</h2>
-<p class="hint">تفتح تلقائياً على الجهاز اللي تم اعتماده. للحماية أول مرة فقط، ثبّتي حساب Google الخاص بباو أب. ما يحتاج إيميل وباسورد جديد.</p>
-<button id="googleSignIn" type="button" class="primary">متابعة بحساب Google مرة واحدة</button>
+<h2>دخول لوحة المواعيد</h2>
+<p class="hint">بإيميل شركة باو أب. بعد أول دخول ناجح، يظل محفوظ بنفس المتصفح بدون ما تحتاجين تسجلين كل مرة.</p>
+<form id="loginForm" class="formgrid">
+ <div class="field"><label for="email">إيميل باو أب</label><input id="email" type="email" value="bibi@pawapp.net" autocomplete="username" required readonly></div>
+ <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" minlength="8" required></div>
+ <div class="full row start">
+ <button type="submit" class="primary" id="loginBtn">دخول</button>
+ <button type="button" id="registerBtn">إنشاء الحساب لأول مرة</button>
+ </div>
+</form>
+<div id="verifyBox" class="hidden notice">
+ <b>تأكيد الإيميل أول مرة</b>
+ <p class="hint">انرسل رابط تأكيد إلى إيميل باو أب. افتحيه من البريد، وبعدها اضغطي «تحققت من الإيميل».</p>
+ <div class="row start"><button id="verifiedBtn" type="button" class="primary">تحققت من الإيميل — فتح اللوحة</button><button id="resendVerify" type="button">إعادة إرسال الرابط</button><button type="button" id="cancelAuth">تغيير الحساب</button></div>
+</div>
 <p id="loginError" class="error" role="alert"></p>
-<p class="hint">بيانات العملاء ما تظهر لأي زائر غير مصرّح له. إذا ما فتح حساب باو أب، تأكدي من السماح بنوافذ تسجيل الدخول.</p>
+<p class="hint">مطلوب تفعيل Email/Password داخل Firebase Authentication مرة واحدة. بيانات العملاء تظل محمية؛ ماكو دخول عام من الرابط.</p>
 </section>
 <section id="dashboard" class="hidden">
 <div class="stats"><div class="stat"><strong id="newCount">0</strong><span>طلبات جديدة</span></div><div class="stat"><strong id="payCount">0</strong><span>بانتظار الدفع</span></div><div class="stat"><strong id="confirmedCount">0</strong><span>مواعيد مؤكدة</span></div></div>
@@ -55,7 +67,7 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <p id="recipient" class="hint"></p><div class="field"><textarea id="messageText"></textarea></div><div class="row start"><button class="gold" id="openBusiness">فتح WhatsApp Business</button><button id="copyMessage">نسخ الرسالة</button><button id="openWhatsApp">فتح واتساب</button></div></div></dialog>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendEmailVerification,reload,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 import {getFirestore,collection,onSnapshot,doc,updateDoc} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 const config={
  apiKey:"AIzaSyDn1sTtz52ro-0m3woM0JfFvVOVXoPj7tY",
@@ -103,36 +115,76 @@ function startListening(){
   $('connection').textContent='متصل • '+all.length+' طلب في Firebase';render();
  },err=>{$('connection').textContent='تعذر قراءة Firebase: '+err.code;alert('ما قدرنا نقرأ الطلبات. تأكدي من صلاحيات Firestore وأن الإيميل مصرح له. ('+err.code+')')});
 }
-onAuthStateChanged(auth,user=>{
- const valid=!!user && !!user.emailVerified && !user.isAnonymous;
- $('loginBox').classList.toggle('hidden',valid);
- $('dashboard').classList.toggle('hidden',!valid);
- $('logout').classList.toggle('hidden',!valid);
- if(!valid){
+const STAFF_EMAIL='bibi@pawapp.net';
+async function updateAccess(){
+ const user=auth.currentUser;
+ const verified=!!user && !user.isAnonymous && user.emailVerified && user.email?.toLowerCase()===STAFF_EMAIL;
+ $('loginBox').classList.toggle('hidden',verified);
+ $('dashboard').classList.toggle('hidden',!verified);
+ $('logout').classList.toggle('hidden',!verified);
+ $('loginForm').classList.toggle('hidden',!!user&&!verified);
+ $('verifyBox').classList.toggle('hidden',!user||verified);
+ if(!verified){
   if(unsubscribe){unsubscribe();unsubscribe=null;}
   all=[];
-  if(user) $('loginError').textContent='الحساب غير مؤكد. اختاري حساب Google الرسمي الخاص بباو أب.';
   return;
  }
  $('loginError').textContent='';
  startListening();
-});
-$('googleSignIn').onclick=async()=>{
+}
+onAuthStateChanged(auth,()=>updateAccess());
+function authError(err){
+ const code=String(err?.code||'');
+ if(code==='auth/configuration-not-found'||code==='auth/operation-not-allowed')
+  return 'لازم تفعيل Email/Password من Firebase → Authentication → Sign-in method، ثم Save. هذي خطوة وحدة.';
+ if(code==='auth/email-already-in-use')return 'هذا الإيميل مسجل من قبل؛ اضغطي «دخول» بدل إنشاء حساب.';
+ if(code==='auth/invalid-credential'||code==='auth/wrong-password'||code==='auth/invalid-login-credentials')return 'الإيميل أو كلمة المرور غير صحيحة.';
+ if(code==='auth/weak-password')return 'كلمة المرور ضعيفة. اختاري كلمة أقوى.';
+ if(code==='auth/too-many-requests')return 'محاولات كثيرة؛ انتظري قبل إعادة المحاولة.';
+ if(code==='auth/network-request-failed')return 'تعذر الاتصال. تأكدي من الإنترنت.';
+ return 'ما اكتملت العملية: '+code;
+}
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();
  $('loginError').textContent='';
- $('googleSignIn').disabled=true;
+ const pass=$('password').value;
+ $('loginBtn').disabled=$('registerBtn').disabled=true;
  try{
   await setPersistence(auth,browserLocalPersistence);
-  const provider=new GoogleAuthProvider();
-  provider.setCustomParameters({prompt:'select_account'});
-  await signInWithPopup(auth,provider);
- }catch(e){
-  $('loginError').textContent=e.code==='auth/operation-not-allowed'
-   ? 'لازم تفعيل Google من Authentication → Sign-in method داخل Firebase مرة وحدة.'
-   : e.code==='auth/unauthorized-domain'
-   ? 'لازم إضافة conciergebooking.pawapp.net في Authorized domains داخل Authentication.'
-   : 'تعذر الدخول بحساب Google: '+(e.code||'خطأ غير معروف');
- }finally{$('googleSignIn').disabled=false;}
+  await signInWithEmailAndPassword(auth,STAFF_EMAIL,pass);
+  $('password').value='';
+ }catch(err){$('loginError').textContent=authError(err)}
+ finally{$('loginBtn').disabled=$('registerBtn').disabled=false;}
+});
+$('registerBtn').onclick=async()=>{
+ $('loginError').textContent='';
+ const pass=$('password').value;
+ if(pass.length<8){$('loginError').textContent='اكتبي كلمة مرور من 8 رموز على الأقل.';return}
+ $('loginBtn').disabled=$('registerBtn').disabled=true;
+ try{
+  await setPersistence(auth,browserLocalPersistence);
+  const credential=await createUserWithEmailAndPassword(auth,STAFF_EMAIL,pass);
+  $('password').value='';
+  await sendEmailVerification(credential.user);
+  $('loginError').textContent='تم إنشاء الحساب وإرسال رابط تأكيد الإيميل. افتحي البريد أولاً.';
+ }catch(err){$('loginError').textContent=authError(err)}
+ finally{$('loginBtn').disabled=$('registerBtn').disabled=false;}
 };
+$('verifiedBtn').onclick=async()=>{
+ $('loginError').textContent='';
+ try{
+  if(!auth.currentUser)throw Error('no-user');
+  await reload(auth.currentUser);
+  await auth.currentUser.getIdToken(true);
+  if(auth.currentUser.emailVerified){await updateAccess();}
+  else $('loginError').textContent='الإيميل ما تأكد للحين. افتحي رسالة Firebase واضغطي رابط التأكيد أولاً.';
+ }catch(err){$('loginError').textContent=authError(err);}
+};
+$('resendVerify').onclick=async()=>{
+ try{await sendEmailVerification(auth.currentUser);$('loginError').textContent='انرسل رابط تأكيد جديد إلى إيميل باو أب.';}
+ catch(err){$('loginError').textContent=authError(err);}
+};
+$('cancelAuth').onclick=()=>signOut(auth);
 $('logout').onclick=()=>signOut(auth);
 $('refresh').onclick=()=>startListening();$('q').oninput=render;$('filter').onchange=render;
 function openEdit(v){
