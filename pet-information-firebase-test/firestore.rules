@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Personnel sign in on the PawApp appointments page, NOT the Firebase console.
+    function staff() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != "anonymous"
+        && (
+          request.auth.token.email == "bibi@pawapp.net"
+          || (
+            exists(/databases/$(database)/documents/pet_staff/$(request.auth.uid))
+            && get(/databases/$(database)/documents/pet_staff/$(request.auth.uid)).data.active == true
+          )
+        );
+    }
+    match /pet_appointments/{appointmentId} {
+      // Initial TEST intake: users can ONLY CREATE their own test request.
+      // They cannot list, view, edit, or delete any customer's details.
+      allow create: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider == "anonymous"
+        && request.resource.data.id == appointmentId
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.isTest == true
+        && request.resource.data.status == "new"
+        && request.resource.data.paymentStatus == "unpaid"
+        && request.resource.data.clientName is string
+        && request.resource.data.clientName.size() <= 120
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^[0-9]{8}$')
+        && request.resource.data.preferredDate is string
+        && request.resource.data.preferredTime is string
+        && request.resource.data.keys().hasOnly([
+          'id','sourceRef','createdBy','isTest','clientName','phone','dogName','petId','services',
+          'preferredDate','preferredTime','area','address','breed','petAge','micro','annual','rabies',
+          'vaccineDate','originalNotes','clinic','doctor','finalDate','finalTime','price','clinicShare',
+          'pawappShare','paymentLink','paymentStatus','status','notes','reminderDismissed',
+          'createdAt','updatedAt'
+        ]);
+      allow get, list, update: if staff();
+      allow delete: if false;
+    }
+    match /pet_staff/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
