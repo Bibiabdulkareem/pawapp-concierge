@@ -322,6 +322,27 @@ try{
   });
   const saved=await response.json();
   if(!response.ok||!saved.ok||!saved.case_id)throw new Error('save_failed');
+  // Additive and isolated Firebase appointment copy: does not change CRM LIVE submission.
+  // Keep the customer's existing WhatsApp continuation even if Firebase is unavailable.
+  try{
+    const {saveAppointmentToFirebase}=await import('./live-bridge.js');
+    await Promise.race([
+      saveAppointmentToFirebase({
+        clientName:clean(val('ownerName')),phone,dogName:clean(val('petName')),
+        petId:selected('petId'),services:need,area:clean(val('area')),
+        address:clean(val('address')),breed:clean(val('breed')),
+        petAge:clean(val('petAge')),micro:selected('micro'),
+        annual:selected('annual'),rabies:selected('rabies'),
+        vaccineDate:val('vaccineDate'),originalNotes:clean(val('notes')),
+        preferredDate:val('visitDate'),preferredTime:val('visitTime')
+      },intakeRequestId),
+      new Promise((_,reject)=>setTimeout(()=>reject(Error('firebase-sync-timeout')),7000))
+    ]);
+  }catch(syncErr){
+    // Appointment copy will become available after LIVE Firestore rules are published.
+    // Never block the already-saved form or WhatsApp message on this extra destination.
+    console.warn('Pet Information appointments: Firebase sync not confirmed',syncErr?.code||syncErr?.message||'error');
+  }
   window.location.href='https://wa.me/'+WA+'?text='+encodeURIComponent(msg+'\n\nPawApp Case: PAW-'+String(saved.case_id).padStart(4,'0'));
 }catch(err){
   const error=$('error');
