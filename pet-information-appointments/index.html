@@ -208,7 +208,9 @@ function openEdit(e){
  editingId=e?.id||null;$('appointmentForm').reset();$('formError').textContent='';
  $('modalTitle').textContent=e?'تعديل الموعد والسعر والدكتور':'إضافة موعد';
  for(const id of ids){const v=e?.[id];if(v!==undefined&&v!==null)$(id).value=id==='services'?(Array.isArray(v)?v.join('، '):v):v;}
- setPhoneLock(e);updateAmountSummary();updateSendButton();
+ setPhoneLock(e);
+ if(e&&(!e.finalDate||!e.finalTime)){$('finalDate').value=e.preferredDate||'';$('finalTime').value=e.preferredTime||'';}
+ updateAmountSummary();updateSendButton();
  $('editor').showModal();(e?$('finalDate'):$('clientName')).focus();
 }
 function saveFromForm(send=false){
@@ -392,7 +394,7 @@ $('search').addEventListener('input',render);$('statusFilter').addEventListener(
 $('importToggle').addEventListener('click',()=>$('importBox').classList.toggle('show'));
 $('closeImport').addEventListener('click',()=>$('importBox').classList.remove('show'));
 $('parseBtn').addEventListener('click',()=>{
- try{preFill=parseWhatsApp($('waPaste').value);openEdit();for(const id of ['clientName','dogName','preferredDate','preferredTime','petId'])if(preFill[id])$(id).value=preFill[id];$('clientPhone').value=preFill.phone;$('services').value=preFill.services.join('، ');$('parseFeedback').textContent='تم استخراج البيانات. راجعيها قبل الحفظ.';}
+ try{preFill=parseWhatsApp($('waPaste').value);openEdit();for(const id of ['clientName','dogName','preferredDate','preferredTime','petId'])if(preFill[id])$(id).value=preFill[id];$('clientPhone').value=preFill.phone;$('services').value=preFill.services.join('، ');setPhoneLock(preFill);$('parseFeedback').textContent='تم استخراج الاسم ورقم العميل والخدمات. راجعي البيانات قبل الحفظ.';}
  catch(e){$('parseFeedback').textContent=e.message}
 });
 $('appointments').addEventListener('click',e=>{
