@@ -153,6 +153,16 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:0 18px 24px}
 <p class="help" style="margin-top:10px;text-align:center" data-t="sendHelp">يفتح واتساب برسالة جاهزة. اضغط «إرسال» بنفسك لإتمام الطلب، وبعدها دز اللوكيشن (الموقع) بنفس المحادثة.</p>
 </section>
 </form>
+<section id="savedTest" style="display:none;margin:16px auto;padding:22px;max-width:630px;border:2px solid #14835c;border-radius:16px;background:#ecfff5;color:#154b39;text-align:center">
+<h2 style="margin:0 0 10px">✅ تم حفظ طلب الاختبار باللوحة</h2>
+<p id="savedDetails" style="line-height:2"></p>
+<p style="font-size:12px">راح تلاقين الطلب إذا فتحتي الداشبورد من <strong>نفس المتصفح ونفس الجهاز</strong>. إذا انتقلتي لمتصفح ثاني ما راح تنتقل البيانات. هذا مو ربط بين الأجهزة.</p>
+<div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:14px">
+<a id="openTestWhatsApp" target="_blank" rel="noopener" style="background:#003e8e;color:white;text-decoration:none;padding:12px 16px;border-radius:10px;font-weight:bold">1. فتح واتساب التجريبي</a>
+<a href="../pet-information-appointments/" style="background:#ece30a;color:#003e8e;text-decoration:none;padding:12px 16px;border-radius:10px;font-weight:bold">2. فتح لوحة المواعيد</a>
+<button type="button" id="anotherTest" style="padding:12px 16px;border:1px solid #b7c9dd;border-radius:10px;background:white">+ تسجيل عميل تجريبي ثاني</button>
+</div>
+</section>
 <footer>© PawApp — شركة باو أب</footer>
 </div>
 <script>
@@ -202,7 +212,7 @@ const names={
 ar:{yes:'نعم',no:'لا',unknown:'مو متأكد',chip:'مايكروشيب',annual:'تطعيم سنوي',rabies:'تطعيم السعار',checkup:'فحص عام',home:'زيارة منزلية',none:'لم يتم تحديد خدمات'},
 en:{yes:'Yes',no:'No',unknown:'Not sure',chip:'Microchip',annual:'Annual vaccination',rabies:'Rabies vaccine',checkup:'General check-up',home:'Home visit',none:'No services selected'}
 };
-const intakeRequestId=crypto.randomUUID();
+// Each valid submission gets its own unique request ID at save time.
 $('form').addEventListener('submit',async function(e){
 e.preventDefault();$('error').classList.remove('active');
 for(const id of ['ownerName','phone','civilId','area','address','petName','visitDate','visitTime']){if(!val(id)){showError('errorRequired',$(id));return}}
@@ -299,9 +309,9 @@ btn.textContent=lang==='ar'?'جاري تسجيل موعد تجريبي...':'Savi
 try{
  const old=JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');
  if(!Array.isArray(old))throw new Error('invalid_local_data');
- const ref='PET-TEST-'+intakeRequestId;
+ const ref='PET-TEST-'+crypto.randomUUID();
  const item={
-  id:'pt'+intakeRequestId.replace(/-/g,''),
+  id:'pt'+ref.slice(9).replace(/-/g,''),
   sourceRef:ref,clientName:clean(val('ownerName')),phone,
   dogName:clean(val('petName')),petId:selected('petId'),services:need,
   preferredDate:val('visitDate'),preferredTime:val('visitTime'),
@@ -309,18 +319,30 @@ try{
   status:'new',followUp:'',notes:'🧪 طلب تجريبي — بانتظار المراجعة'+String.fromCharCode(10)+clean(val('notes')),
   createdAt:Date.now(),updatedAt:Date.now(),isTest:true
  };
- const all=old.filter(x=>x&&x.sourceRef!==ref);
- all.unshift(item);
+ const all=[item,...old.filter(x=>x&&x.id!==item.id)];
  if(all.length>5000)all.length=5000;
  localStorage.setItem(LOCAL_KEY,JSON.stringify(all));
+ const verified=JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');
+ if(!Array.isArray(verified)||!verified.some(x=>x.id===item.id))throw new Error('verify_save_failed');
  // Isolated test: never POST to Concierge LIVE.
  const prefix=lang==='ar'?'🧪 *رسالة اختبار Pet Information — ليست حجزاً فعلياً*':'🧪 *Pet Information test — not a real booking*';
- window.location.href='https://wa.me/'+WA+'?text='+encodeURIComponent(prefix+String.fromCharCode(10,10)+msg+String.fromCharCode(10,10)+'Test Ref: '+ref);
+ $('openTestWhatsApp').href='https://wa.me/'+WA+'?text='+encodeURIComponent(prefix+String.fromCharCode(10,10)+msg+String.fromCharCode(10,10)+'Test Ref: '+ref);
+ $('savedDetails').textContent='تم حفظ طلب '+item.clientName+' على هذا الجهاز — إجمالي الطلبات الموجودة بالدفتر: '+verified.length+' — المرجع '+ref;
+ $('form').style.display='none';
+ $('savedTest').style.display='block';
+ $('savedTest').scrollIntoView({behavior:'smooth',block:'center'});
 }catch(err){
  const error=$('error');
  error.textContent=lang==='ar'?'تعذر حفظ موعد الاختبار على هالجهاز. تأكدي من إعدادات المتصفح ووجود مساحة تخزين.':'Could not save test appointment locally in this browser.';
  error.classList.add('active');error.scrollIntoView({block:'center',behavior:'smooth'});
 }finally{btn.disabled=false;btn.textContent=originalText;}
+});
+$('anotherTest').addEventListener('click',()=>{
+ $('form').reset();
+ $('form').style.display='';
+ $('savedTest').style.display='none';
+ $('error').classList.remove('active');
+ $('form').scrollIntoView({behavior:'smooth',block:'start'});
 });
 })();
 </script>
