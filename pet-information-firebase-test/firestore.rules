@@ -5,6 +5,7 @@ service cloud.firestore {
     function staff() {
       return request.auth != null
         && request.auth.token.firebase.sign_in_provider != "anonymous"
+        && request.auth.token.email_verified == true
         && (
           request.auth.token.email == "bibi@pawapp.net"
           || (
