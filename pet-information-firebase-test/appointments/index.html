@@ -24,13 +24,13 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <header><div class="row"><div><h1>🐾 PawApp | مواعيد Pet Information</h1><small>لوحة الموظفة — تجربة ربط Firebase المستقل</small></div><button id="logout" class="hidden">تسجيل خروج</button></div></header>
 <main>
 <div class="notice">🧪 هذه نسخة اختبار Firebase فقط. لا تستخدمي بيانات حقيقية قبل اعتماد الأمان. نموذج العملاء الأصلي وConcierge LIVE وCRM TEST لم يتغيروا.</div>
-<section id="loginBox" class="box"><h2>دخول لوحة مواعيد الموظفة</h2><p class="hint">الدخول هنا داخل موقع باو أب، وليس إلى لوحة Firebase. يحتاج حساب موظفة مسموح له بقراءة الطلبات.</p>
-<form id="loginForm" class="formgrid"><div class="field"><label for="email">الإيميل</label><input id="email" type="email" autocomplete="username" required placeholder="bibi@pawapp.net"></div>
-<div class="field"><label for="password">كلمة مرور حساب لوحة المواعيد</label><input id="password" type="password" autocomplete="current-password" required></div>
-<div class="full"><button type="submit" class="primary">دخول</button><span class="error" id="loginError"></span></div></form>
-<div id="verifyBox" class="hidden notice"><b>تأكيد إيميل الموظفة مطلوب قبل عرض الطلبات.</b>
-<div class="row start" style="margin-top:8px"><button id="sendVerify" type="button">إرسال رابط تأكيد الإيميل</button><button id="checkVerify" type="button" class="primary">تأكدت من الإيميل — تحديث</button><button type="button" id="verifyLogout">تسجيل خروج</button></div><span class="hint" id="verifyMessage"></span>
-</div></section>
+<section id="loginBox" class="box">
+<h2>لوحة المواعيد</h2>
+<p class="hint">تفتح تلقائياً على الجهاز اللي تم اعتماده. للحماية أول مرة فقط، ثبّتي حساب Google الخاص بباو أب. ما يحتاج إيميل وباسورد جديد.</p>
+<button id="googleSignIn" type="button" class="primary">متابعة بحساب Google مرة واحدة</button>
+<p id="loginError" class="error" role="alert"></p>
+<p class="hint">بيانات العملاء ما تظهر لأي زائر غير مصرّح له. إذا ما فتح حساب باو أب، تأكدي من السماح بنوافذ تسجيل الدخول.</p>
+</section>
 <section id="dashboard" class="hidden">
 <div class="stats"><div class="stat"><strong id="newCount">0</strong><span>طلبات جديدة</span></div><div class="stat"><strong id="payCount">0</strong><span>بانتظار الدفع</span></div><div class="stat"><strong id="confirmedCount">0</strong><span>مواعيد مؤكدة</span></div></div>
 <div class="box"><div class="row"><h2>🔔 تذكير المواعيد والمتابعة</h2><span class="hint" id="connection">جار تحميل الطلبات…</span></div><div id="reminders"></div><p class="hint">التذكير يظهر قبل الموعد بساعة وبعده لتأكيد إتمام الزيارة، أثناء فتح اللوحة. ويمكن حفظ الموعد في التقويم.</p></div>
@@ -55,7 +55,7 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <p id="recipient" class="hint"></p><div class="field"><textarea id="messageText"></textarea></div><div class="row start"><button class="gold" id="openBusiness">فتح WhatsApp Business</button><button id="copyMessage">نسخ الرسالة</button><button id="openWhatsApp">فتح واتساب</button></div></div></dialog>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,sendEmailVerification,reload} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut,setPersistence,browserLocalPersistence} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 import {getFirestore,collection,onSnapshot,doc,updateDoc} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
 const config={
  apiKey:"AIzaSyDn1sTtz52ro-0m3woM0JfFvVOVXoPj7tY",
@@ -104,31 +104,35 @@ function startListening(){
  },err=>{$('connection').textContent='تعذر قراءة Firebase: '+err.code;alert('ما قدرنا نقرأ الطلبات. تأكدي من صلاحيات Firestore وأن الإيميل مصرح له. ('+err.code+')')});
 }
 onAuthStateChanged(auth,user=>{
- const yes=!!user,verified=yes&&user.emailVerified;
- $('loginBox').classList.toggle('hidden',verified);
- $('loginForm').classList.toggle('hidden',yes&&!verified);
- $('verifyBox').classList.toggle('hidden',!yes||verified);
- $('dashboard').classList.toggle('hidden',!verified);
- $('logout').classList.toggle('hidden',!verified);
- if(!verified){if(unsubscribe){unsubscribe();unsubscribe=null;}all=[];return;}
+ const valid=!!user && !!user.emailVerified && !user.isAnonymous;
+ $('loginBox').classList.toggle('hidden',valid);
+ $('dashboard').classList.toggle('hidden',!valid);
+ $('logout').classList.toggle('hidden',!valid);
+ if(!valid){
+  if(unsubscribe){unsubscribe();unsubscribe=null;}
+  all=[];
+  if(user) $('loginError').textContent='الحساب غير مؤكد. اختاري حساب Google الرسمي الخاص بباو أب.';
+  return;
+ }
+ $('loginError').textContent='';
  startListening();
 });
-$('sendVerify').onclick=async()=>{
- try{await sendEmailVerification(auth.currentUser);$('verifyMessage').textContent='انرسل رابط التأكيد للإيميل. افتحيه ثم اضغطي تحديث.';}
- catch(e){$('verifyMessage').textContent='تعذر إرسال رابط التأكيد: '+e.code}
+$('googleSignIn').onclick=async()=>{
+ $('loginError').textContent='';
+ $('googleSignIn').disabled=true;
+ try{
+  await setPersistence(auth,browserLocalPersistence);
+  const provider=new GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  await signInWithPopup(auth,provider);
+ }catch(e){
+  $('loginError').textContent=e.code==='auth/operation-not-allowed'
+   ? 'لازم تفعيل Google من Authentication → Sign-in method داخل Firebase مرة وحدة.'
+   : e.code==='auth/unauthorized-domain'
+   ? 'لازم إضافة conciergebooking.pawapp.net في Authorized domains داخل Authentication.'
+   : 'تعذر الدخول بحساب Google: '+(e.code||'خطأ غير معروف');
+ }finally{$('googleSignIn').disabled=false;}
 };
-$('checkVerify').onclick=async()=>{
- try{await reload(auth.currentUser);await auth.currentUser.getIdToken(true);
- if(auth.currentUser.emailVerified){$('loginBox').classList.add('hidden');$('dashboard').classList.remove('hidden');$('logout').classList.remove('hidden');startListening();}
- else $('verifyMessage').textContent='الإيميل لم يتأكد بعد. افتحي الرابط اللي وصل للإيميل أولاً.';
- }catch(e){$('verifyMessage').textContent='تعذر التحديث: '+e.code;}
-};
-$('verifyLogout').onclick=()=>signOut(auth);
-$('loginForm').addEventListener('submit',async e=>{
- e.preventDefault();$('loginError').textContent='';
- try{await signInWithEmailAndPassword(auth,clean($('email').value),$('password').value);$('password').value='';}
- catch(err){$('loginError').textContent='تعذر تسجيل الدخول: '+err.code;}
-});
 $('logout').onclick=()=>signOut(auth);
 $('refresh').onclick=()=>startListening();$('q').oninput=render;$('filter').onchange=render;
 function openEdit(v){
