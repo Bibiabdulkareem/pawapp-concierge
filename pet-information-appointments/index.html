@@ -56,8 +56,9 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
 <main class="layout">
 <div class="notice"><b>مهم:</b> هذي نسخة بسيطة بدون باك إند. المواعيد تنحفظ <b>على هذا المتصفح وهذا الجهاز فقط</b>، وما تنتقل تلقائياً من نموذج العميل أو نظام الكونسيرج. أضيفي الطلب يدوياً أو الصقي رسالة الواتساب، واحفظي نسخة احتياطية. التذكيرات داخل الصفحة تشتغل وهي مفتوحة، وتقدرين تضيفين الموعد لتقويم الجهاز للتنبيه حتى وهي مقفلة. ما نحفظ الرقم المدني هنا.</div>
 <section class="stats" id="stats" aria-label="إحصائيات المواعيد"></section>
+<div class="panel" id="reminderPanel" style="margin-top:14px"><div class="row" style="justify-content:space-between"><h2>🔔 متابعة المواعيد والزيارات</h2><span class="pill wait" id="localCount">0 طلبات على هذا الجهاز</span></div><div class="hint" style="margin-top:4px">مواعيد خلال ساعة، وزيارات تحتاج تأكيد بعد الموعد، ومتابعات متأخرة. التنبيه داخل هذه الصفحة فقط أثناء فتحها.</div><div id="reminderItems" style="margin-top:10px"></div></div>
 <div class="row toolbar">
- <div class="row"><button class="btn yellow" id="addBtn">+ إضافة موعد</button><button class="btn primary" id="importToggle">📋 إضافة من رسالة واتساب</button></div>
+ <div class="row"><button class="btn yellow" id="addBtn">+ إضافة موعد</button><button class="btn primary" id="importToggle">📋 إضافة من رسالة واتساب</button><button class="btn sml" id="refreshBtn">↻ تحديث الطلبات</button></div>
  <div class="row"><button class="btn sml" id="notifBtn">🔔 تنبيه داخل الصفحة</button><button class="btn sml" id="exportBtn">تصدير نسخة احتياطية</button><button class="btn sml" id="restoreBtn">استرجاع نسخة</button><input type="file" accept="application/json,.json" id="restoreFile" hidden></div>
 </div>
 <div class="panel importBox" id="importBox">
@@ -68,7 +69,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
 </div>
 <section class="panel">
  <div class="row" style="justify-content:space-between"><div><h2>جدول المواعيد والمتابعات</h2><p>رتّبي الحجز، اكتشفي التداخل، أضيفي السعر والدكتور، وجهّزي رسالة العميل من زر واتساب.</p></div><span class="pill wait" id="dueSummary">—</span></div>
- <div class="filters"><input id="search" placeholder="بحث بالاسم أو رقم الهاتف أو الدكتور" aria-label="بحث"><select id="statusFilter" aria-label="الحالة"><option value="all">كل الحالات</option><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار العيادة</option><option value="awaiting_payment">بانتظار الدفع</option><option value="confirmed">مؤكد ومدفوع</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select><select id="dateFilter" aria-label="التاريخ"><option value="all">كل المواعيد</option><option value="today">اليوم</option><option value="week">الأسبوع القادم</option><option value="overdue">متابعة مستحقة</option></select></div>
+ <div class="filters"><input id="search" placeholder="بحث بالاسم أو رقم الهاتف أو الدكتور" aria-label="بحث"><select id="statusFilter" aria-label="الحالة"><option value="all">كل الحالات</option><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار العيادة</option><option value="awaiting_payment">بانتظار الدفع</option><option value="confirmed">مؤكد ومدفوع</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select><select id="dateFilter" aria-label="التاريخ"><option value="all">كل المواعيد</option><option value="today">اليوم</option><option value="week">الأسبوع القادم</option><option value="overdue">متابعة مستحقة</option><option value="soon">موعد خلال ساعة</option><option value="visitcheck">تحقق من الزيارة</option></select></div>
  <div class="list" id="appointments"></div>
 </section>
 <p class="footer">Pet Information Appointments • مستقلة عن Booking Concierge • بيانات محلية فقط • بتوقيت الكويت</p>
@@ -89,6 +90,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
     <div class="field"><label for="finalTime">وقت الموعد بعد التنسيق</label><input id="finalTime" type="time"></div>
     <div class="field"><label for="clinic">العيادة</label><input id="clinic" maxlength="120"></div>
     <div class="field"><label for="doctor">الدكتور</label><input id="doctor" maxlength="120"></div>
+    <div class="field"><label for="doctorPhone">رقم تواصل الدكتور (اختياري)</label><input id="doctorPhone" type="tel" inputmode="tel" placeholder="5XXXXXXX" maxlength="18"><small class="hint">لإرسال رسالة متابعة مباشرة للدكتور عند الحاجة.</small></div>
     <div class="field"><label for="price">السعر الإجمالي للعميل (د.ك)</label><input id="price" type="number" min="0" step=".001" placeholder="40.000"></div>
 <div class="field"><label for="clinicShare">مبلغ العيادة (داخلي فقط)</label><input id="clinicShare" type="number" min="0" step=".001" placeholder="5.000"></div>
 <div class="field"><label for="pawappShare">حصة باو أب (داخلي فقط)</label><input id="pawappShare" type="number" min="0" step=".001" placeholder="5.000"></div>
@@ -97,6 +99,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
     <div class="field span2"><label for="paymentLink">رابط الدفع (اختياري)</label><input id="paymentLink" type="url" placeholder="https://..." dir="ltr"><small class="hint">استخدمي رابط الدفع الحقيقي من بوابة الدفع الموجودة عندج، وما يتم إنشاء رابط تلقائياً.</small></div>
     <div class="field"><label for="status">حالة الطلب</label><select id="status"><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار تأكيد العيادة</option><option value="awaiting_payment">تم التنسيق — بانتظار الدفع</option><option value="confirmed">مؤكد ومدفوع</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select></div>
     <div class="field"><label for="followUp">ذكّرني بالمتابعة</label><input id="followUp" type="datetime-local"></div>
+    <div class="field"><label for="visitStatus">حالة الزيارة (مستقلة عن الدفع)</label><select id="visitStatus"><option value="pending">بانتظار الزيارة</option><option value="on_way">الدكتور بالطريق</option><option value="arrived">الدكتور وصل</option><option value="completed">تمت الزيارة</option><option value="not_completed">لم تتم الزيارة</option></select></div>
     <div class="field span2"><label for="notes">ملاحظات المتابعة (اختياري)</label><textarea id="notes" placeholder="آخر تواصل، موعد الطبيب، ملاحظات العميل..."></textarea></div>
    </div>
    <div class="error" id="formError" role="alert"></div>
@@ -119,6 +122,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
 const KEY='pawapp_pet_information_appointments_local_v1';
 const STATUS={new:'جديد — بانتظار المراجعة',contacted:'تم التواصل',waiting:'بانتظار العيادة',awaiting_payment:'بانتظار الدفع',confirmed:'مؤكد ومدفوع',completed:'مكتمل',no_response:'لم يرد',cancelled:'ملغي'};
 const ACTIVE=['new','contacted','waiting','awaiting_payment','confirmed','no_response'];
+const VISIT={pending:'بانتظار الزيارة',on_way:'الدكتور بالطريق',arrived:'الدكتور وصل',completed:'تمت الزيارة',not_completed:'لم تتم الزيارة'};
 let entries=load(),editingId=null,preFill=null,lastNotified={},waDraft=null;
 const $=id=>document.getElementById(id);
 function load(){try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.filter(x=>x&&typeof x==='object'&&x.id).slice(0,5000):[]}catch(e){return []}}
@@ -191,7 +195,7 @@ function render(){
    '<button class="btn sml warn" data-action="delete" data-id="'+esc(e.id)+'">حذف</button></div></article>';
  }).join('');
 }
-const ids=['clientName','clientPhone','dogName','petId','services','preferredDate','preferredTime','finalDate','finalTime','clinic','doctor','price','clinicShare','pawappShare','paymentStatus','paymentLink','status','followUp','notes'];
+const ids=['clientName','clientPhone','dogName','petId','services','preferredDate','preferredTime','finalDate','finalTime','clinic','doctor','doctorPhone','price','clinicShare','pawappShare','paymentStatus','paymentLink','status','followUp','visitStatus','notes'];
 function updateAmountSummary(){
  const p=$('price').value,c=$('clinicShare').value,a=$('pawappShare').value;
  const fmt=x=>x===''?'—':Number(x).toFixed(3)+' د.ك';
@@ -222,6 +226,7 @@ function saveFromForm(send=false){
  if(Boolean($('finalDate').value)!==Boolean($('finalTime').value))return fail('حددي التاريخ والوقت النهائي مع بعض.');
  const price=clean($('price').value),clinicShare=clean($('clinicShare').value),pawappShare=clean($('pawappShare').value);
  for(const value of [price,clinicShare,pawappShare])if(value!==''&&(!Number.isFinite(Number(value))||Number(value)<0))return fail('راجعي المبالغ: كل قيمة لازم تكون صفر أو أكثر.');
+ if(clean($('doctorPhone').value)&&!safePhone($('doctorPhone').value))return fail('رقم الدكتور لازم يكون رقم كويتي صحيح من 8 أرقام.');
  if(price===''&&(clinicShare!==''||pawappShare!==''))return fail('حددي السعر الإجمالي قبل تقسيم المبالغ الداخلية.');
  if(price!==''&&Number(clinicShare||0)+Number(pawappShare||0)>Number(price)+0.00001)return fail('حصة العيادة وباو أب أكبر من السعر الإجمالي. راجعي الأرقام.');
  const paymentLink=clean($('paymentLink').value);
@@ -232,15 +237,16 @@ function saveFromForm(send=false){
  if(send&&!paid&&!paymentLink){$('paymentLink').focus();return fail('قبل إرسال رسالة الدفع ضيفي رابط الدفع الحقيقي أولاً.');}
  const status=send?(paid?'confirmed':'awaiting_payment'):$('status').value;
  if(status==='confirmed'&&!paid)return fail('لا تسجلين الموعد مؤكداً ومدفوعاً إلا بعد التحقق من الدفع. اختاري بانتظار الدفع.');
+ if($('visitStatus').value==='completed'&&(!clean($('finalDate').value)||!clean($('finalTime').value)))return fail('لازم يكون فيه موعد نهائي قبل تسجيل أن الزيارة تمت.');
  const record={
   id:prior?.id||uid(),createdAt:prior?.createdAt||Date.now(),
   clientName:name,phone,dogName:clean($('dogName').value),petId:$('petId').value,
   services:clean($('services').value).split(/[،,\n]/).map(x=>x.trim()).filter(Boolean),
   preferredDate:$('preferredDate').value,preferredTime:$('preferredTime').value,
   finalDate:$('finalDate').value,finalTime:$('finalTime').value,
-  clinic:clean($('clinic').value),doctor:clean($('doctor').value),price,clinicShare,pawappShare,
+  clinic:clean($('clinic').value),doctor:clean($('doctor').value),doctorPhone:safePhone($('doctorPhone').value),price,clinicShare,pawappShare,
   paymentStatus:paid?'paid':'unpaid',paymentLink:validPayLink(paymentLink),
-  status,followUp:$('followUp').value,notes:clean($('notes').value),
+  status,followUp:$('followUp').value,visitStatus:$('visitStatus').value||'pending',notes:clean($('notes').value),
   sourceRef:prior?.sourceRef||preFill?.sourceRef||'',isTest:!!(prior?.isTest||preFill?.isTest),updatedAt:Date.now()
  };
  const previous=entries;
