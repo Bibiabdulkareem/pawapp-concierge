@@ -251,40 +251,71 @@ function saveFromForm(send=false){
 }
 function generateMessage(e,follow=false){
  const date=e.finalDate||e.preferredDate,time=e.finalTime||e.preferredTime;
- const price=e.price!==''&&e.price!=null?Number(e.price).toFixed(3)+' د.ك':'سيتم تحديده بعد التنسيق';
- const paid=e.paymentStatus==='paid';
+ const price=e.price!==''&&e.price!=null?Number(e.price).toFixed(3)+' د.ك':'سيحدد بعد التنسيق';
  if(follow)return [
- 'أهلاً '+e.clientName+' 🌷','معاج شركة باو أب (PawApp).',
- 'نتابع معاك طلب استكمال بيانات الحيوان الأليف للكلب '+(e.dogName||'')+'.',
- 'الموعد المقترح: '+date+' الساعة '+time+'.',
- 'نرجو تأكيد تواجدك أو إرسال الوقت المناسب لج، عشان ننسّق مع العيادة.',
- 'شاكرين تعاونك 🐾'
+  '🐾 *شركة باو أب | متابعة موعد*','',
+  'أهلاً '+e.clientName+'،',
+  'نتابع معاك طلب خدمة الكلب '+(e.dogName||'')+'.',
+  '• التاريخ المقترح: '+date,'• الوقت: '+time,
+  'يرجى الرد لتأكيد الوقت المناسب أو اقتراح وقت ثاني.','شكراً لتعاونك 🐾'
  ].join('\n');
  const lines=[
- '🐾 *شركة باو أب | تفاصيل موعد Pet Information*','',
- 'أهلاً '+e.clientName+' 🌷',
- '• اسم الكلب: '+(e.dogName||'—'),
- '• الخدمات: '+(e.services?.length?e.services.join('، '):'حسب الطلب'),
- '• الدكتور: '+(e.doctor||'سيتم تحديده'),
- '• العيادة: '+(e.clinic||'سيتم تحديدها'),
- '• التاريخ: '+date,
- '• الوقت: '+time,
- '• المبلغ: '+price,
- ''
+  '🐾 *شركة باو أب | '+(e.paymentStatus==='paid'?'تأكيد موعد':'طلب إتمام الدفع')+'*','',
+  'أهلاً '+e.clientName+' 🌷','',
+  '🐶 *تفاصيل الزيارة*',
+  '• اسم الكلب: '+(e.dogName||'—'),
+  '• الخدمات: '+(e.services?.length?e.services.join('، '):'حسب الطلب'),
+  '• العيادة: '+(e.clinic||'—'),
+  '• الدكتور: '+(e.doctor||'—'),
+  '• التاريخ: '+date,
+  '• الوقت: '+time,
+  '• المبلغ الإجمالي: '+price,''
  ];
- if(paid){lines.push('✅ *تم تسجيل الدفع، وموعدك مؤكد حسب التنسيق مع العيادة.*')}
- else{lines.push('🟡 *الموعد بانتظار إتمام الدفع والتأكيد النهائي.*');if(e.paymentLink)lines.push('🔗 *رابط الدفع:* '+e.paymentLink);else lines.push('راح نزودك بتفاصيل الدفع بعد الاتفاق.');lines.push('بعد الدفع، يرجى إرسال إشعار الدفع لنا لتأكيد الحجز.')}
- lines.push('','لأي تعديل على الموعد تواصل معنا على هالرقم. شكراً لاختيارك باو أب 🐾');
+ if(e.paymentStatus==='paid')lines.push('✅ *تم تسجيل الدفع وتأكيد موعدك مع العيادة.*');
+ else{
+  lines.push('🟡 *تم تنسيق موعدك، والتأكيد النهائي بعد إتمام الدفع.*');
+  if(e.paymentLink)lines.push('🔗 *رابط الدفع:* '+e.paymentLink);
+  else lines.push('سنتواصل معاك بخصوص رابط الدفع.');
+  lines.push('بعد الدفع، يرجى إرسال إشعار الدفع لنا للتأكيد.');
+ }
+ lines.push('','لأي تعديل على الموعد تواصل معنا.','شركة باو أب 🐾');
  return lines.join('\n');
 }
-function whatsapp(e,follow=false){
+function showWhatsappPreview(e,follow=false){
  const phone=safePhone(e.phone);
- if(!phone){toast('رقم الهاتف غير صحيح');return}
- const msg=generateMessage(e,follow);
- const url='https://wa.me/965'+phone+'?text='+encodeURIComponent(msg);
- const tab=window.open(url,'_blank','noopener,noreferrer');
- if(!tab)window.location.href=url;
- toast('فتحنا رسالة جاهزة. لازم تضغطين إرسال في واتساب بنفسج.');
+ if(!phone){toast('رقم العميل غير صحيح. راجعي بيانات الفورمة.');return;}
+ if(!follow&&(!e.finalDate||!e.finalTime||!e.clinic||!e.doctor||e.price===''||e.price==null)){
+  toast('حددي العيادة والدكتور والموعد النهائي والسعر قبل رسالة الدفع أو التأكيد.');openEdit(e);return;
+ }
+ if(!follow&&e.paymentStatus!=='paid'&&!validPayLink(e.paymentLink)){
+  toast('أضيفي رابط الدفع قبل إرسال طلب الدفع.');openEdit(e);return;
+ }
+ waDraft={phone,id:e.id,follow};
+ $('waPreviewTitle').textContent=follow?'معاينة رسالة متابعة':e.paymentStatus==='paid'?'معاينة رسالة تأكيد الموعد':'معاينة رابط الدفع';
+ $('waRecipient').textContent='إلى: '+e.clientName+' | +965 '+phone+' (حساب المُرسل تختارينه من تطبيق واتساب)';
+ $('waPreviewText').value=generateMessage(e,follow);
+ $('waPreviewDialog').showModal();
+}
+async function copyWhatsAppDraft(){
+ const msg=$('waPreviewText').value;
+ try{await navigator.clipboard.writeText(msg);toast('نسخت الرسالة. افتحي باو أب WhatsApp Business والصقيها بمحادثة العميل.');}
+ catch(err){$('waPreviewText').focus();$('waPreviewText').select();toast('حددي الرسالة وانسخيها يدوياً.');}
+}
+function whatsapp(e,follow=false){showWhatsappPreview(e,follow);}
+function launchWhatsapp(business=false){
+ if(!waDraft)return;
+ const msg=$('waPreviewText').value,phone='965'+waDraft.phone;
+ if(business){
+  // Best effort only: phone sender depends on installed Business app and OS.
+  copyWhatsAppDraft();
+  try{window.location.href='whatsapp-business://send?phone='+phone+'&text='+encodeURIComponent(msg);}
+  catch(err){toast('افتحي حساب باو أب Business والصقي الرسالة المنسوخة.');}
+ }else{
+  const url='https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+  const tab=window.open(url,'_blank','noopener,noreferrer');
+  if(!tab)window.location.href=url;
+  toast('تأكدي إن المرسل هو حساب باو أب قبل الإرسال.');
+ }
 }
 function calendar(e){
  const date=e.finalDate||e.preferredDate,time=e.finalTime||e.preferredTime;
