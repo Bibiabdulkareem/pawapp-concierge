@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>PawApp | Firebase Pet Information Appointments TEST</title>
+<style>
+:root{font:14px/1.8 Tahoma,Arial,sans-serif;color:#183653;background:#f2f6fb;--blue:#003e8e;--line:#d9e4f1;--gold:#f7e73c}
+*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.6;cursor:wait}
+header{background:var(--blue);color:#fff;padding:18px max(calc((100vw - 1040px)/2),17px)}header h1{font-size:20px;margin:0}header small{color:#c8dbee}
+main{max-width:1040px;margin:auto;padding:16px 14px 45px}.box,.entry{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:13px}
+.notice{border:1px solid #e9d48f;background:#fff9db;padding:10px 13px;border-radius:10px;font-size:12px}
+button{border:1px solid var(--line);background:#fff;padding:9px 13px;border-radius:10px;font-weight:bold;color:#123864}
+button.primary{background:var(--blue);color:white;border-color:var(--blue)}button.gold{background:var(--gold);border-color:var(--gold)}
+.row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}.row.start{justify-content:start}
+h2{font-size:17px;color:var(--blue);margin:4px 0 12px}h3{color:var(--blue);font-size:16px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}.stat{background:white;border:1px solid var(--line);border-radius:12px;text-align:center;padding:12px}.stat strong{display:block;font-size:24px;color:var(--blue)}.stat span{font-size:11px;color:#60738e}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:13px}.cell small{display:block;color:#71829a}.cell b{overflow-wrap:anywhere}
+.label{border-radius:30px;padding:4px 10px;background:#e9f1fc;color:#184d8c;font-weight:bold;font-size:11px}.label.wait{background:#fff2bd;color:#805b00}.label.done{background:#ddf5e8;color:#176243}
+.entry{margin-top:12px}.actions{border-top:1px solid #eff2f8;padding-top:12px;margin-top:13px;display:flex;flex-wrap:wrap;gap:8px}
+.field{display:flex;flex-direction:column;gap:4px}.field label{font-weight:bold;font-size:12px}.field input,.field textarea,.field select{width:100%;border:1px solid #cbd9e9;border-radius:10px;padding:9px 11px;min-height:40px;background:#fff}.field textarea{min-height:85px}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:13px 0}.full{grid-column:1/-1}
+.error{color:#b82944;font-size:12px}.hint{color:#637891;font-size:12px}.split{padding:10px;background:#f2f6ff;border-radius:9px}
+dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;width:min(620px,calc(100vw - 18px));max-height:92dvh;overflow:auto}dialog::backdrop{background:#071a358f}.modal{padding:20px}
+#messageText{min-height:250px;line-height:2}.hidden{display:none!important}.reminder{padding:10px 12px;background:#fff8d7;border-radius:10px;border:1px solid #f0dca0;margin:9px 0}.search{display:flex;gap:9px;flex-wrap:wrap;margin:13px 0}.search input{flex:1;min-width:180px}.search select{min-width:130px}
+@media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.stats{gap:5px}.stat strong{font-size:20px}}
+</style></head><body>
+<header><div class="row"><div><h1>🐾 PawApp | مواعيد Pet Information</h1><small>لوحة الموظفة — تجربة ربط Firebase المستقل</small></div><button id="logout" class="hidden">تسجيل خروج</button></div></header>
+<main>
+<div class="notice">🧪 هذه نسخة اختبار Firebase فقط. لا تستخدمي بيانات حقيقية قبل اعتماد الأمان. نموذج العملاء الأصلي وConcierge LIVE وCRM TEST لم يتغيروا.</div>
+<section id="loginBox" class="box"><h2>دخول لوحة مواعيد الموظفة</h2><p class="hint">الدخول هنا داخل موقع باو أب، وليس إلى لوحة Firebase. يحتاج حساب موظفة مسموح له بقراءة الطلبات.</p>
+<form id="loginForm" class="formgrid"><div class="field"><label for="email">الإيميل</label><input id="email" type="email" autocomplete="username" required placeholder="bibi@pawapp.net"></div>
+<div class="field"><label for="password">كلمة مرور حساب لوحة المواعيد</label><input id="password" type="password" autocomplete="current-password" required></div>
+<div class="full"><button type="submit" class="primary">دخول</button><span class="error" id="loginError"></span></div></form></section>
+<section id="dashboard" class="hidden">
+<div class="stats"><div class="stat"><strong id="newCount">0</strong><span>طلبات جديدة</span></div><div class="stat"><strong id="payCount">0</strong><span>بانتظار الدفع</span></div><div class="stat"><strong id="confirmedCount">0</strong><span>مواعيد مؤكدة</span></div></div>
+<div class="box"><div class="row"><h2>🔔 تذكير المواعيد والمتابعة</h2><span class="hint" id="connection">جار تحميل الطلبات…</span></div><div id="reminders"></div><p class="hint">التذكير يظهر قبل الموعد بساعة وبعده لتأكيد إتمام الزيارة، أثناء فتح اللوحة. ويمكن حفظ الموعد في التقويم.</p></div>
+<div class="box"><div class="row"><h2>طلبات العملاء</h2><button id="refresh">↻ تحديث الطلبات</button></div><div class="search"><input id="q" placeholder="بحث باسم العميل، رقم الموبايل، اسم الكلب" aria-label="بحث"><select id="filter"><option value="all">كل الطلبات</option><option value="new">جديدة</option><option value="awaiting_payment">بانتظار الدفع</option><option value="confirmed">مؤكدة</option></select></div><div id="records"></div></div>
+</section></main>
+<dialog id="editDialog"><div class="modal"><div class="row"><h2 id="editTitle">تنسيق الموعد</h2><button type="button" id="closeEdit">إغلاق</button></div><div id="customerInfo" class="split"></div>
+<form id="editForm"><div class="formgrid">
+<div class="field"><label for="date">تاريخ الموعد *</label><input id="date" type="date" required></div>
+<div class="field"><label for="time">الوقت *</label><input id="time" type="time" required></div>
+<div class="field"><label for="clinic">اسم العيادة *</label><input id="clinic" required maxlength="120"></div>
+<div class="field"><label for="doctor">اسم الدكتور *</label><input id="doctor" required maxlength="120"></div>
+<div class="field"><label for="price">السعر الكامل للعميل د.ك *</label><input id="price" type="number" min="0" step=".001" required></div>
+<div class="field"><label for="clinicShare">مبلغ العيادة (داخلي)</label><input id="clinicShare" type="number" min="0" step=".001"></div>
+<div class="field"><label for="pawappShare">حصة باو أب (داخلي)</label><input id="pawappShare" type="number" min="0" step=".001"></div>
+<div class="field full"><span class="split" id="split"></span></div>
+<div class="field full"><label for="paymentLink">رابط الدفع *</label><input id="paymentLink" type="url" placeholder="https://..." dir="ltr"></div>
+<div class="field full"><label for="notes">ملاحظات الموظفة</label><textarea id="notes" maxlength="1200"></textarea></div>
+</div><p class="error" id="editError"></p>
+<div class="row start"><button type="submit" id="saveOnly">حفظ فقط</button><button class="gold" type="button" id="saveSend">💬 حفظ وإرسال رابط الدفع</button></div></form></div></dialog>
+<dialog id="messageDialog"><div class="modal"><div class="row"><h2>رسالة واتساب جاهزة</h2><button type="button" id="closeMessage">إغلاق</button></div>
+<p class="notice">افتحي من WhatsApp Business مال شركة باو أب. الرابط يحدد المستلم فقط ولا يحدد رقم المرسل. الإرسال يدوي من حساب الشركة.</p>
+<p id="recipient" class="hint"></p><div class="field"><textarea id="messageText"></textarea></div><div class="row start"><button class="gold" id="openBusiness">فتح WhatsApp Business</button><button id="copyMessage">نسخ الرسالة</button><button id="openWhatsApp">فتح واتساب</button></div></div></dialog>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+import {getFirestore,collection,onSnapshot,doc,updateDoc} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+const config={
+ apiKey:"AIzaSyDn1sTtz52ro-0m3woM0JfFvVOVXoPj7tY",
+ authDomain:"pawapp-pet-information.firebaseapp.com",projectId:"pawapp-pet-information",
+ storageBucket:"pawapp-pet-information.firebasestorage.app",messagingSenderId:"288139146341",
+ appId:"1:288139146341:web:38359016346c248783828c"
+};
+const app=initializeApp(config,"pawapp-pet-staff-staging");
+const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+let all=[],current=null,recipient=null,unsubscribe=null;
+const clean=v=>String(v==null?"":v).trim(),esc=v=>clean(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const phone=v=>{let n=clean(v).replace(/\D/g,"");if(n.length===11&&n.startsWith("965"))n=n.slice(3);return /^\d{8}$/.test(n)?n:""};
+const money=v=>v!==''&&v!=null&&Number.isFinite(Number(v))?Number(v).toFixed(3)+' د.ك':'—';
+const state=v=>v.paymentStatus==='paid'||v.status==='confirmed'?'confirmed':v.status==='awaiting_payment'?'awaiting_payment':'new';
+const stateName={new:'طلب جديد',awaiting_payment:'بانتظار الدفع',confirmed:'مؤكد'};
+function when(v){const d=v.finalDate||v.preferredDate,t=v.finalTime||v.preferredTime;return d&&t?Date.parse(d+'T'+t+':00+03:00'):NaN}
+function visitAlerts(v){if(state(v)!=='confirmed'||!Number.isFinite(when(v)))return[];
+ const now=Date.now(),at=when(v),notes=[];
+ if(at-now<=3600000&&at-now>0&&!v.reminderBeforeDone)notes.push({key:'reminderBeforeDone',message:'الموعد خلال ساعة — تواصلي مع العميل والعيادة'});
+ if(now-at>=3600000&&!v.reminderAfterDone)notes.push({key:'reminderAfterDone',message:'الموعد انتهى — تأكدي هل تمت الزيارة'});
+ return notes;
+}
+function render(){
+ const counts={new:0,awaiting_payment:0,confirmed:0};all.forEach(v=>counts[state(v)]++);
+ $('newCount').textContent=counts.new;$('payCount').textContent=counts.awaiting_payment;$('confirmedCount').textContent=counts.confirmed;
+ const reminders=all.flatMap(v=>visitAlerts(v).map(a=>({v,...a})));
+ $('reminders').innerHTML=reminders.length?reminders.map(({v,key,message})=>'<div class="reminder row"><div><b>'+esc(v.clientName)+'</b> • '+esc(v.finalDate||v.preferredDate)+' '+esc(v.finalTime||v.preferredTime)+'<div>'+esc(message)+'</div></div><button data-id="'+esc(v.id)+'" data-done="'+key+'">تمت المتابعة</button></div>').join(''):'<p class="hint">ماكو مواعيد تحتاج متابعة حالياً.</p>';
+ const query=clean($('q').value).toLowerCase(),filter=$('filter').value;
+ const sorted=all.filter(v=>(filter==='all'||state(v)===filter)&&(!query||[v.clientName,v.phone,v.dogName,v.doctor,v.clinic].join(' ').toLowerCase().includes(query))).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+ $('records').innerHTML=sorted.length?sorted.map(v=>{
+  const s=state(v),service=Array.isArray(v.services)?v.services.join('، '):clean(v.services);
+  return '<article class="entry"><div class="row"><div><h3>'+esc(v.clientName)+(v.petId==='yes'?' ⭐':'')+'</h3><span class="hint">+965 '+esc(v.phone)+' • '+esc(v.dogName)+'</span></div><span class="label '+(s==='confirmed'?'done':s==='awaiting_payment'?'wait':'')+'">'+stateName[s]+'</span></div>'+
+   '<div class="grid"><div class="cell"><small>الخدمات المطلوبة</small><b>'+esc(service||'—')+'</b></div><div class="cell"><small>الموعد</small><b>'+esc((v.finalDate||v.preferredDate||'—')+' '+(v.finalTime||v.preferredTime||''))+'</b></div>'+
+   '<div class="cell"><small>العيادة / الدكتور</small><b>'+esc([v.clinic,v.doctor].filter(Boolean).join(' — ')||'لم يحدد')+'</b></div><div class="cell"><small>السعر الكامل للعميل</small><b>'+esc(money(v.price))+'</b></div></div>'+
+   '<div class="actions"><button class="primary" data-edit="'+esc(v.id)+'">✏ تعديل الموعد والسعر</button>'+
+   (s==='awaiting_payment'?'<button class="gold" data-paid="'+esc(v.id)+'">✅ تأكيد وصول الدفع</button><button data-send="'+esc(v.id)+'">إعادة رابط الدفع</button>':s==='confirmed'?'<button data-send="'+esc(v.id)+'">💬 رسالة التأكيد</button><button data-calendar="'+esc(v.id)+'">📅 التقويم</button>':'')+
+   '</div><details><summary>بيانات العميل والمبالغ الداخلية</summary><p class="hint">المنطقة: '+esc(v.area)+' • العنوان: '+esc(v.address)+' • السلالة: '+esc(v.breed)+' • العمر: '+esc(v.petAge)+'</p><p class="hint">Pet ID: '+esc(v.petId)+' • المايكروشيب: '+esc(v.micro)+' • السنوي: '+esc(v.annual)+' • السعار: '+esc(v.rabies)+' • آخر تطعيم: '+esc(v.vaccineDate)+'</p><p>ملاحظات العميل: '+esc(v.originalNotes)+'</p><p>ملاحظات الموظفة: '+esc(v.notes)+'</p><p>العيادة: '+esc(money(v.clinicShare))+' • باو أب: '+esc(money(v.pawappShare))+'</p></details></article>';
+ }).join(''):'<p class="hint">ماكو طلبات بهالفلتر. استخدمي نموذج Firebase التجريبي أولاً.</p>';
+}
+function startListening(){
+ if(unsubscribe)unsubscribe();
+ $('connection').textContent='جار الاتصال بقاعدة Firebase';
+ unsubscribe=onSnapshot(collection(db,'pet_appointments'),snap=>{
+  all=snap.docs.map(d=>({...d.data(),id:d.id}));
+  $('connection').textContent='متصل • '+all.length+' طلب في Firebase';render();
+ },err=>{$('connection').textContent='تعذر قراءة Firebase: '+err.code;alert('ما قدرنا نقرأ الطلبات. تأكدي من صلاحيات Firestore وأن الإيميل مصرح له. ('+err.code+')')});
+}
+onAuthStateChanged(auth,user=>{
+ const yes=!!user;
+ $('loginBox').classList.toggle('hidden',yes);$('dashboard').classList.toggle('hidden',!yes);
+ $('logout').classList.toggle('hidden',!yes);
+ if(!yes){if(unsubscribe){unsubscribe();unsubscribe=null;}all=[];return;}
+ startListening();
+});
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();$('loginError').textContent='';
+ try{await signInWithEmailAndPassword(auth,clean($('email').value),$('password').value);$('password').value='';}
+ catch(err){$('loginError').textContent='تعذر تسجيل الدخول: '+err.code;}
+});
+$('logout').onclick=()=>signOut(auth);
+$('refresh').onclick=()=>startListening();$('q').oninput=render;$('filter').onchange=render;
+function openEdit(v){
+ current=v;$('editError').textContent='';$('editForm').reset();
+ $('editTitle').textContent='تنسيق موعد '+v.clientName;
+ $('customerInfo').textContent='العميل: '+v.clientName+' | رقم العميل: +965 '+v.phone+' | الخدمات: '+(Array.isArray(v.services)?v.services.join('، '):v.services||'—');
+ for(const [k,val] of Object.entries({date:v.finalDate||v.preferredDate,time:v.finalTime||v.preferredTime,clinic:v.clinic,doctor:v.doctor,price:v.price,clinicShare:v.clinicShare,pawappShare:v.pawappShare,paymentLink:v.paymentLink,notes:v.notes}))$(k).value=val??'';
+ $('saveSend').textContent=state(v)==='confirmed'?'حفظ وإعداد رسالة التأكيد':'💬 حفظ وفتح رابط الدفع';
+ split();$('editDialog').showModal();
+}
+function split(){const p=clean($('price').value),c=clean($('clinicShare').value),a=clean($('pawappShare').value);const diff=p===''?'—':(Number(p)-Number(c||0)-Number(a||0)).toFixed(3)+' د.ك';$('split').textContent='إجمالي العميل: '+money(p)+' • العيادة: '+money(c)+' • باو أب: '+money(a)+' • غير موزّع: '+diff;}
+for(const id of ['price','clinicShare','pawappShare'])$(id).oninput=split;
+$('closeEdit').onclick=()=>$('editDialog').close();
+function validUrl(s){try{const u=new URL(s);return u.protocol==='https:'?u.href:''}catch(e){return ''}}
+async function save(send){
+ if(!current)return;
+ $('editError').textContent='';
+ const date=$('date').value,time=$('time').value,clinic=clean($('clinic').value),doctor=clean($('doctor').value),p=clean($('price').value),c=clean($('clinicShare').value),a=clean($('pawappShare').value),link=clean($('paymentLink').value);
+ const fail=x=>{$('editError').textContent=x;return false};
+ if(!date||!time||!clinic||!doctor||p===''||!Number.isFinite(Number(p))||Number(p)<0)return fail('حددي الموعد والدكتور والعيادة والسعر الكامل.');
+ if([c,a].some(x=>x!==''&&(!Number.isFinite(Number(x))||Number(x)<0)))return fail('المبالغ الداخلية غير صحيحة.');
+ if(Number(c||0)+Number(a||0)>Number(p)+.00001)return fail('مبلغ العيادة وباو أب أكبر من السعر الكامل.');
+ if(link&&!validUrl(link))return fail('رابط الدفع لازم يبدأ https://');
+ if(send&&state(current)!=='confirmed'&&!link)return fail('قبل إرسال رسالة الدفع، ضيفي رابط الدفع أولاً.');
+ const overlap=all.filter(v=>v.id!==current.id&&state(v)!=='new'&&v.finalDate===date&&v.finalTime===time&&clean(v.doctor).toLowerCase()===doctor.toLowerCase()&&clean(v.clinic).toLowerCase()===clinic.toLowerCase());
+ if(overlap.length&&!confirm('⚠ يوجد موعد بنفس العيادة والدكتور والوقت. هل تبين تحفظينه رغم التضارب؟'))return false;
+ const status=state(current)==='confirmed'?'confirmed':send?'awaiting_payment':current.status;
+ const data={finalDate:date,finalTime:time,clinic,doctor,price:p,clinicShare:c,pawappShare:a,paymentLink:link?validUrl(link):'',notes:clean($('notes').value),status,updatedAt:Date.now(),reminderBeforeDone:false,reminderAfterDone:false};
+ try{
+  $('saveOnly').disabled=$('saveSend').disabled=true;
+  await updateDoc(doc(db,'pet_appointments',current.id),data);
+  $('editDialog').close();
+  if(send)message({...current,...data});
+  return true;
+ }catch(e){return fail('ما انحفظ الموعد في Firebase: '+e.code)}
+ finally{$('saveOnly').disabled=$('saveSend').disabled=false;}
+}
+$('editForm').onsubmit=e=>{e.preventDefault();save(false)};$('saveSend').onclick=()=>save(true);
+function message(v){
+ recipient=phone(v.phone);if(!recipient){alert('رقم العميل غير صحيح');return}
+ const confirmed=state(v)==='confirmed';
+ if(!confirmed&&!v.paymentLink){alert('لازم رابط الدفع قبل الإرسال');return}
+ const msg=['🐾 *شركة باو أب | '+(confirmed?'تأكيد الموعد':'موعدك ورابط الدفع')+'*','','أهلاً '+v.clientName+' 🌷','',
+ '• الحيوان: '+(v.dogName||'—'),'• الخدمات: '+(Array.isArray(v.services)?v.services.join('، '):v.services||'—'),
+ '• العيادة: '+(v.clinic||'—'),'• الدكتور: '+(v.doctor||'—'),'• التاريخ: '+(v.finalDate||v.preferredDate||'—'),'• الوقت: '+(v.finalTime||v.preferredTime||'—'),
+ '• السعر الإجمالي: '+money(v.price),''];
+ if(confirmed)msg.push('✅ تم تأكيد موعدك بعد التحقق من الدفع.');
+ else msg.push('يرجى إتمام الدفع لتأكيد الحجز.','🔗 رابط الدفع: '+v.paymentLink);
+ msg.push('','شكراً لاختيار شركة باو أب 🐾');
+ $('recipient').textContent='إلى العميل +965 '+recipient;
+ $('messageText').value=msg.join('\n');$('messageDialog').showModal();
+}
+$('closeMessage').onclick=()=>$('messageDialog').close();
+$('copyMessage').onclick=async()=>{try{await navigator.clipboard.writeText($('messageText').value);alert('تم النسخ. افتحي واتساب باو أب Business والصقي الرسالة.')}catch(e){$('messageText').select();alert('انسخي النص يدوياً.')}};
+$('openBusiness').onclick=()=>{if(!recipient)return;const url='whatsapp-business://send?phone=965'+recipient+'&text='+encodeURIComponent($('messageText').value);window.location.href=url};
+$('openWhatsApp').onclick=()=>{if(!recipient)return;window.open('https://wa.me/965'+recipient+'?text='+encodeURIComponent($('messageText').value),'_blank','noopener,noreferrer')};
+async function paid(v){
+ if(!confirm('هل تأكدتي فعلاً من وصول المبلغ؟ هذا تأكيد يدوي، مو مربوط ببوابة الدفع.'))return;
+ try{await updateDoc(doc(db,'pet_appointments',v.id),{status:'confirmed',paymentStatus:'paid',updatedAt:Date.now(),reminderBeforeDone:false,reminderAfterDone:false});message({...v,status:'confirmed',paymentStatus:'paid'});}
+ catch(e){alert('ما قدرنا نسجل التأكيد: '+e.code)}
+}
+function cal(v){
+ const start=when(v);if(!Number.isFinite(start))return alert('الوقت غير محدد');
+ const iso=t=>new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d+Z$/,'Z');
+ const body=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//PawApp//Pet Information//AR','BEGIN:VEVENT','UID:'+v.id+'@pawapp.net','DTSTAMP:'+iso(Date.now()),'DTSTART:'+iso(start),'DTEND:'+iso(start+3600000),
+ 'SUMMARY:موعد باو أب - '+v.clientName,'DESCRIPTION:مراجعة مع '+v.doctor+' - +965 '+v.phone,'BEGIN:VALARM','TRIGGER:-PT60M','ACTION:DISPLAY','DESCRIPTION:موعد باو أب بعد ساعة','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+ const u=URL.createObjectURL(new Blob([body],{type:'text/calendar'})),a=document.createElement('a');a.href=u;a.download='PawApp-Appointment.ics';a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);
+}
+$('records').onclick=e=>{const btn=e.target.closest('button');if(!btn)return;const id=btn.dataset.edit||btn.dataset.paid||btn.dataset.send||btn.dataset.calendar;const v=all.find(r=>r.id===id);if(!v)return;if(btn.dataset.edit)openEdit(v);else if(btn.dataset.paid)paid(v);else if(btn.dataset.send)message(v);else if(btn.dataset.calendar)cal(v)};
+$('reminders').onclick=async e=>{const b=e.target.closest('button[data-done]');if(!b)return;const v=all.find(x=>x.id===b.dataset.id);if(!v)return;try{await updateDoc(doc(db,'pet_appointments',v.id),{[b.dataset.done]:true,updatedAt:Date.now()})}catch(err){alert('فشل حفظ المتابعة: '+err.code)}};
+setInterval(()=>{if(!document.hidden&&auth.currentUser)render()},60000);
+</script></body></html>
