@@ -192,37 +192,62 @@ function render(){
  }).join('');
 }
 const ids=['clientName','clientPhone','dogName','petId','services','preferredDate','preferredTime','finalDate','finalTime','clinic','doctor','price','clinicShare','pawappShare','paymentStatus','paymentLink','status','followUp','notes'];
+function updateAmountSummary(){
+ const p=$('price').value,c=$('clinicShare').value,a=$('pawappShare').value;
+ const fmt=x=>x===''?'—':Number(x).toFixed(3)+' د.ك';
+ const difference=p===''?null:Number(p)-Number(c||0)-Number(a||0);
+ $('amountSummary').textContent='إجمالي العميل: '+fmt(p)+' | العيادة: '+fmt(c)+' | باو أب: '+fmt(a)+' | الفرق غير الموزّع: '+(difference===null?'—':difference.toFixed(3)+' د.ك');
+ $('amountSummary').style.borderColor=difference!==null&&difference<0?'#b73047':'#eadb9c';
+}
+function updateSendButton(){$('saveSendBtn').textContent=$('paymentStatus').value==='paid'?'✅ حفظ وإعداد تأكيد الموعد':'💳 حفظ وإعداد رسالة الدفع';}
+function setPhoneLock(e){
+ if(e?.sourceRef&&safePhone(e.phone)){$('clientPhone').value=e.phone;$('clientPhone').readOnly=true;$('phoneHint').textContent='✅ رقم العميل محفوظ من الفورمة، مو لازم تكتبينه مرة ثانية.';}
+ else{$('clientPhone').readOnly=false;$('phoneHint').textContent='للموعد اليدوي فقط: أدخلي رقم العميل مرة وحدة.';}
+}
 function openEdit(e){
  editingId=e?.id||null;$('appointmentForm').reset();$('formError').textContent='';
- $('modalTitle').textContent=e?'تعديل موعد العميل':'إضافة موعد';
+ $('modalTitle').textContent=e?'تعديل الموعد والسعر والدكتور':'إضافة موعد';
  for(const id of ids){const v=e?.[id];if(v!==undefined&&v!==null)$(id).value=id==='services'?(Array.isArray(v)?v.join('، '):v):v;}
- $('editor').showModal();$('clientName').focus();
+ setPhoneLock(e);updateAmountSummary();updateSendButton();
+ $('editor').showModal();(e?$('finalDate'):$('clientName')).focus();
 }
-function saveFromForm(){
- const phone=safePhone($('clientPhone').value),name=clean($('clientName').value);
- if(!name||!phone||!$('preferredDate').value||!$('preferredTime').value){$('formError').textContent='لازم اسم العميل ورقم كويتي صحيح وموعد مفضل.';return}
- if(Boolean($('finalDate').value)!==Boolean($('finalTime').value)){$('formError').textContent='حددي التاريخ والوقت مع بعض للموعد المتفق عليه.';return}
- const price=clean($('price').value);
- if(price&&(Number(price)<0||!Number.isFinite(Number(price)))){$('formError').textContent='راجعي السعر.';return}
- if(clean($('paymentLink').value)&&!validPayLink($('paymentLink').value)){$('formError').textContent='رابط الدفع لازم يكون https:// صحيح.';return}
+function saveFromForm(send=false){
+ $('formError').textContent='';
  const prior=entries.find(x=>x.id===editingId);
- const e={
- id:prior?.id||uid(),createdAt:prior?.createdAt||Date.now(),
- clientName:name,phone,dogName:clean($('dogName').value),petId:$('petId').value,
- services:clean($('services').value).split(/[،,\n]/).map(x=>x.trim()).filter(Boolean),
- preferredDate:$('preferredDate').value,preferredTime:$('preferredTime').value,
- finalDate:$('finalDate').value,finalTime:$('finalTime').value,
- clinic:clean($('clinic').value),doctor:clean($('doctor').value),price,
- paymentStatus:$('paymentStatus').value,paymentLink:validPayLink($('paymentLink').value),
- status:$('status').value,followUp:$('followUp').value,notes:clean($('notes').value),
- sourceRef:prior?.sourceRef||preFill?.sourceRef||'',
- updatedAt:Date.now()
+ const phone=safePhone($('clientPhone').value||prior?.phone||preFill?.phone||''),name=clean($('clientName').value);
+ const fail=m=>{$('formError').textContent=m;return null};
+ if(!name||!phone||!$('preferredDate').value||!$('preferredTime').value)return fail('لازم اسم العميل ورقم كويتي صحيح والموعد المطلوب. رقم طلب الفورمة يُحفظ تلقائياً.');
+ if(Boolean($('finalDate').value)!==Boolean($('finalTime').value))return fail('حددي التاريخ والوقت النهائي مع بعض.');
+ const price=clean($('price').value),clinicShare=clean($('clinicShare').value),pawappShare=clean($('pawappShare').value);
+ for(const value of [price,clinicShare,pawappShare])if(value!==''&&(!Number.isFinite(Number(value))||Number(value)<0))return fail('راجعي المبالغ: كل قيمة لازم تكون صفر أو أكثر.');
+ if(price===''&&(clinicShare!==''||pawappShare!==''))return fail('حددي السعر الإجمالي قبل تقسيم المبالغ الداخلية.');
+ if(price!==''&&Number(clinicShare||0)+Number(pawappShare||0)>Number(price)+0.00001)return fail('حصة العيادة وباو أب أكبر من السعر الإجمالي. راجعي الأرقام.');
+ const paymentLink=clean($('paymentLink').value);
+ if(paymentLink&&!validPayLink(paymentLink))return fail('رابط الدفع لازم يكون صحيح ويبدأ https://');
+ const paid=$('paymentStatus').value==='paid';
+ if(paid&&prior?.paymentStatus!=='paid'&&!confirm('هل تأكدتي من وصول الدفع فعلاً؟ تحديد «مدفوع» يتم يدوياً ولا يتحقق من بوابة الدفع.'))return null;
+ if(send&&(!$('finalDate').value||!$('finalTime').value||!clean($('doctor').value)||!clean($('clinic').value)||price===''))return fail('قبل إرسال الرسالة حددي الموعد النهائي والدكتور والعيادة والسعر الإجمالي.');
+ if(send&&!paid&&!paymentLink){$('paymentLink').focus();return fail('قبل إرسال رسالة الدفع ضيفي رابط الدفع الحقيقي أولاً.');}
+ const status=send?(paid?'confirmed':'awaiting_payment'):$('status').value;
+ if(status==='confirmed'&&!paid)return fail('لا تسجلين الموعد مؤكداً ومدفوعاً إلا بعد التحقق من الدفع. اختاري بانتظار الدفع.');
+ const record={
+  id:prior?.id||uid(),createdAt:prior?.createdAt||Date.now(),
+  clientName:name,phone,dogName:clean($('dogName').value),petId:$('petId').value,
+  services:clean($('services').value).split(/[،,\n]/).map(x=>x.trim()).filter(Boolean),
+  preferredDate:$('preferredDate').value,preferredTime:$('preferredTime').value,
+  finalDate:$('finalDate').value,finalTime:$('finalTime').value,
+  clinic:clean($('clinic').value),doctor:clean($('doctor').value),price,clinicShare,pawappShare,
+  paymentStatus:paid?'paid':'unpaid',paymentLink:validPayLink(paymentLink),
+  status,followUp:$('followUp').value,notes:clean($('notes').value),
+  sourceRef:prior?.sourceRef||preFill?.sourceRef||'',isTest:!!(prior?.isTest||preFill?.isTest),updatedAt:Date.now()
  };
- if(prior){entries=entries.map(x=>x.id===e.id?e:x)}else entries.unshift(e);
- if(!persist())return;
+ const previous=entries;
+ entries=prior?entries.map(x=>x.id===record.id?record:x):[record,...entries];
+ if(!persist()){entries=previous;return null;}
  preFill=null;$('editor').close();render();
- const overlaps=conflict(e);
- toast(overlaps.length?'حفظت الموعد، لكن فيه تعارض مع '+overlaps.map(x=>x.clientName).join('، '):'تم حفظ الموعد على هالجهاز');
+ const clashes=conflict(record);toast(clashes.length?'⚠ الموعد متداخل مع '+clashes.map(x=>x.clientName).join('، '):'تم حفظ الموعد');
+ if(send)showWhatsappPreview(record,false);
+ return record;
 }
 function generateMessage(e,follow=false){
  const date=e.finalDate||e.preferredDate,time=e.finalTime||e.preferredTime;
@@ -324,7 +349,14 @@ function parseWhatsApp(raw){
 $('addBtn').addEventListener('click',()=>{preFill=null;openEdit()});
 $('closeModal').addEventListener('click',()=>$('editor').close());
 $('cancelBtn').addEventListener('click',()=>$('editor').close());
-$('appointmentForm').addEventListener('submit',e=>{e.preventDefault();saveFromForm()});
+$('appointmentForm').addEventListener('submit',e=>{e.preventDefault();saveFromForm(false)});
+$('saveSendBtn').addEventListener('click',()=>saveFromForm(true));
+$('paymentStatus').addEventListener('change',updateSendButton);
+for(const id of ['price','clinicShare','pawappShare'])$(id).addEventListener('input',updateAmountSummary);
+$('waCloseBtn').addEventListener('click',()=>$('waPreviewDialog').close());
+$('waCopyBtn').addEventListener('click',copyWhatsAppDraft);
+$('waBusinessBtn').addEventListener('click',()=>launchWhatsapp(true));
+$('waNormalBtn').addEventListener('click',()=>launchWhatsapp(false));
 $('search').addEventListener('input',render);$('statusFilter').addEventListener('change',render);$('dateFilter').addEventListener('change',render);
 $('importToggle').addEventListener('click',()=>$('importBox').classList.toggle('show'));
 $('closeImport').addEventListener('click',()=>$('importBox').classList.remove('show'));
