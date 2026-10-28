@@ -68,7 +68,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
 </div>
 <section class="panel">
  <div class="row" style="justify-content:space-between"><div><h2>جدول المواعيد والمتابعات</h2><p>رتّبي الحجز، اكتشفي التداخل، أضيفي السعر والدكتور، وجهّزي رسالة العميل من زر واتساب.</p></div><span class="pill wait" id="dueSummary">—</span></div>
- <div class="filters"><input id="search" placeholder="بحث بالاسم أو رقم الهاتف أو الدكتور" aria-label="بحث"><select id="statusFilter" aria-label="الحالة"><option value="all">كل الحالات</option><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار العيادة</option><option value="confirmed">مؤكد</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select><select id="dateFilter" aria-label="التاريخ"><option value="all">كل المواعيد</option><option value="today">اليوم</option><option value="week">الأسبوع القادم</option><option value="overdue">متابعة مستحقة</option></select></div>
+ <div class="filters"><input id="search" placeholder="بحث بالاسم أو رقم الهاتف أو الدكتور" aria-label="بحث"><select id="statusFilter" aria-label="الحالة"><option value="all">كل الحالات</option><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار العيادة</option><option value="awaiting_payment">بانتظار الدفع</option><option value="confirmed">مؤكد ومدفوع</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select><select id="dateFilter" aria-label="التاريخ"><option value="all">كل المواعيد</option><option value="today">اليوم</option><option value="week">الأسبوع القادم</option><option value="overdue">متابعة مستحقة</option></select></div>
  <div class="list" id="appointments"></div>
 </section>
 <p class="footer">Pet Information Appointments • مستقلة عن Booking Concierge • بيانات محلية فقط • بتوقيت الكويت</p>
@@ -79,7 +79,7 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
   <form id="appointmentForm" novalidate>
    <div class="formGrid">
     <div class="field"><label for="clientName">اسم العميل *</label><input id="clientName" maxlength="120" required></div>
-    <div class="field"><label for="clientPhone">رقم هاتف العميل *</label><input id="clientPhone" type="tel" inputmode="tel" placeholder="5XXXXXXX" maxlength="18" required></div>
+    <div class="field"><label for="clientPhone">رقم هاتف العميل *</label><input id="clientPhone" type="tel" inputmode="tel" placeholder="5XXXXXXX" maxlength="18" required><small class="hint" id="phoneHint">الرقم يجي تلقائياً من النموذج التجريبي.</small></div>
     <div class="field"><label for="dogName">اسم الكلب</label><input id="dogName" maxlength="100"></div>
     <div class="field"><label for="petId">عنده Pet ID؟</label><select id="petId"><option value="">غير معروف</option><option value="yes">نعم — أولوية</option><option value="no">لا</option></select></div>
     <div class="field span2"><label for="services">الخدمات المطلوبة</label><input id="services" placeholder="تطعيم سنوي، مايكروشيب، زيارة منزلية"></div>
@@ -89,26 +89,37 @@ hr{border:0;border-top:1px solid var(--line);margin:15px 0}
     <div class="field"><label for="finalTime">وقت الموعد بعد التنسيق</label><input id="finalTime" type="time"></div>
     <div class="field"><label for="clinic">العيادة</label><input id="clinic" maxlength="120"></div>
     <div class="field"><label for="doctor">الدكتور</label><input id="doctor" maxlength="120"></div>
-    <div class="field"><label for="price">السعر بالدينار الكويتي</label><input id="price" type="number" min="0" step=".001" placeholder="مثلاً 12.000"></div>
-    <div class="field"><label for="paymentStatus">حالة الدفع</label><select id="paymentStatus"><option value="unpaid">غير مدفوع</option><option value="paid">مدفوع (تأكيد يدوي)</option></select></div>
+    <div class="field"><label for="price">السعر الإجمالي للعميل (د.ك)</label><input id="price" type="number" min="0" step=".001" placeholder="40.000"></div>
+<div class="field"><label for="clinicShare">مبلغ العيادة (داخلي فقط)</label><input id="clinicShare" type="number" min="0" step=".001" placeholder="5.000"></div>
+<div class="field"><label for="pawappShare">حصة باو أب (داخلي فقط)</label><input id="pawappShare" type="number" min="0" step=".001" placeholder="5.000"></div>
+<div class="field span2"><div class="notice" id="amountSummary" style="margin:0">الإجمالي: — | العيادة: — | باو أب: — | الفرق غير الموزّع: —</div><small class="hint">الإجمالي فقط يروح للعميل. المبالغ الداخلية ما تطلع في واتساب، والفرق غير الموزع مو ربح تلقائي.</small></div>
+    <div class="field"><label for="paymentStatus">حالة الدفع</label><select id="paymentStatus"><option value="unpaid">لم يدفع بعد</option><option value="paid">تم التحقق من الدفع يدوياً</option></select><small class="hint">إرسال رابط الدفع لا يعني إن العميل دفع. غيري الحالة بعد التحقق فقط.</small></div>
     <div class="field span2"><label for="paymentLink">رابط الدفع (اختياري)</label><input id="paymentLink" type="url" placeholder="https://..." dir="ltr"><small class="hint">استخدمي رابط الدفع الحقيقي من بوابة الدفع الموجودة عندج، وما يتم إنشاء رابط تلقائياً.</small></div>
-    <div class="field"><label for="status">حالة الطلب</label><select id="status"><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار تأكيد العيادة</option><option value="confirmed">مؤكد</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select></div>
+    <div class="field"><label for="status">حالة الطلب</label><select id="status"><option value="new">جديد — بانتظار المراجعة</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار تأكيد العيادة</option><option value="awaiting_payment">تم التنسيق — بانتظار الدفع</option><option value="confirmed">مؤكد ومدفوع</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select></div>
     <div class="field"><label for="followUp">ذكّرني بالمتابعة</label><input id="followUp" type="datetime-local"></div>
     <div class="field span2"><label for="notes">ملاحظات المتابعة (اختياري)</label><textarea id="notes" placeholder="آخر تواصل، موعد الطبيب، ملاحظات العميل..."></textarea></div>
    </div>
    <div class="error" id="formError" role="alert"></div>
-   <div class="row" style="margin-top:18px;justify-content:flex-end"><button type="button" class="btn" id="cancelBtn">إلغاء</button><button type="submit" class="btn yellow">حفظ الموعد</button></div>
+   <div class="row" style="margin-top:18px;justify-content:flex-end"><button type="button" class="btn" id="cancelBtn">إلغاء</button><button type="submit" class="btn">حفظ فقط</button><button type="button" class="btn yellow" id="saveSendBtn">💳 حفظ وإعداد رسالة الدفع</button></div><p class="hint">زر الإرسال يحفظ المبالغ والموعد أولاً، وبعدها يفتح معاينة رسالة جاهزة على رقم العميل المسجل.</p>
   </form>
  </div>
 </dialog>
+<dialog id="waPreviewDialog"><div class="modal">
+<div class="row" style="justify-content:space-between"><h2 id="waPreviewTitle">معاينة رسالة واتساب</h2><button class="btn sml" id="waCloseBtn" type="button">إغلاق ✕</button></div>
+<p class="hint" id="waRecipient"></p>
+<div class="notice"><b>مهم:</b> رقم العميل هو المستلم فقط. عشان ترسلين من رقم باو أب، افتحيها من حساب <b>WhatsApp Business الخاص بباو أب</b>. الرابط ما يحدد المرسل، وقد يفتح واتسابج الشخصي. عندها انسخي الرسالة وارسليها من حساب باو أب يدوياً.</div>
+<div class="field"><label for="waPreviewText">نص الرسالة (قابل للتعديل)</label><textarea id="waPreviewText" style="min-height:240px;line-height:1.9"></textarea></div>
+<div class="row" style="margin-top:15px"><button class="btn yellow" id="waBusinessBtn" type="button">محاولة فتح WhatsApp Business</button><button class="btn" id="waCopyBtn" type="button">📋 نسخ الرسالة</button><button class="btn" id="waNormalBtn" type="button">فتح واتساب عادي</button></div>
+<p class="hint">راجعي حساب المرسل قبل الإرسال. فتح واتساب لا يعني أن الرسالة انرسلت.</p>
+</div></dialog>
 <div class="toast" id="toast" role="status"></div>
 <script>
 (function(){
 'use strict';
 const KEY='pawapp_pet_information_appointments_local_v1';
-const STATUS={new:'جديد — بانتظار المراجعة',contacted:'تم التواصل',waiting:'بانتظار العيادة',confirmed:'مؤكد',completed:'مكتمل',no_response:'لم يرد',cancelled:'ملغي'};
-const ACTIVE=['new','contacted','waiting','confirmed','no_response'];
-let entries=load(),editingId=null,preFill=null,lastNotified={};
+const STATUS={new:'جديد — بانتظار المراجعة',contacted:'تم التواصل',waiting:'بانتظار العيادة',awaiting_payment:'بانتظار الدفع',confirmed:'مؤكد ومدفوع',completed:'مكتمل',no_response:'لم يرد',cancelled:'ملغي'};
+const ACTIVE=['new','contacted','waiting','awaiting_payment','confirmed','no_response'];
+let entries=load(),editingId=null,preFill=null,lastNotified={},waDraft=null;
 const $=id=>document.getElementById(id);
 function load(){try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.filter(x=>x&&typeof x==='object'&&x.id).slice(0,5000):[]}catch(e){return []}}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(entries));return true}catch(e){alert('ما قدرت أحفظ البيانات محلياً. تأكدي من مساحة الجهاز وخذي نسخة احتياطية.');return false}}
@@ -163,21 +174,24 @@ function render(){
   '<div><small>الموعد المطلوب</small><strong>'+short(dateLabel(e.preferredDate,e.preferredTime))+'</strong></div>'+
   '<div><small>الموعد المتفق عليه</small><strong>'+short(dateLabel(e.finalDate,e.finalTime))+'</strong></div>'+
   '<div><small>الدكتور / العيادة</small><strong>'+short([e.doctor,e.clinic].filter(Boolean).join(' — '))+'</strong></div>'+
-  '<div><small>السعر</small><strong>'+(e.price!==''&&e.price!=null?esc(Number(e.price).toFixed(3)+' د.ك'):'لم يُحدد')+'</strong></div>'+
-  '<div><small>الدفع</small><strong>'+(e.paymentStatus==='paid'?'مدفوع (يدوي)':'غير مدفوع')+'</strong></div>'+
+  '<div><small>إجمالي العميل</small><strong>'+(e.price!==''&&e.price!=null?esc(Number(e.price).toFixed(3)+' د.ك'):'لم يُحدد')+'</strong></div>'+
+'<div><small>العيادة (داخلي)</small><strong>'+(e.clinicShare!==''&&e.clinicShare!=null?esc(Number(e.clinicShare).toFixed(3)+' د.ك'):'—')+'</strong></div>'+
+'<div><small>باو أب (داخلي)</small><strong>'+(e.pawappShare!==''&&e.pawappShare!=null?esc(Number(e.pawappShare).toFixed(3)+' د.ك'):'—')+'</strong></div>'+
+'<div><small>فرق غير موزع</small><strong>'+(e.price!==''&&e.price!=null?esc((Number(e.price)-Number(e.clinicShare||0)-Number(e.pawappShare||0)).toFixed(3)+' د.ك'):'—')+'</strong></div>'+
+  '<div><small>الدفع</small><strong>'+(e.paymentStatus==='paid'?'تم التحقق من الدفع':'لم يدفع بعد')+'</strong></div>'+
   '<div><small>المتابعة</small><strong>'+short(e.followUp?e.followUp.replace('T',' '):'لا توجد')+'</strong></div>'+
   '</div>'+
   (e.services?.length?'<div class="tags">'+e.services.map(s=>'<span class="tag">'+esc(s)+'</span>').join('')+'</div>':'')+
   (conflicts.length?'<p style="color:var(--red);font-weight:700">⚠ موعد متداخل مع: '+esc(conflicts.map(x=>x.clientName).join('، '))+'</p>':'')+
   '<div class="actions">'+
-   '<button class="btn sml primary" data-action="edit" data-id="'+esc(e.id)+'">✏ تعديل</button>'+
-   '<button class="btn sml yellow" data-action="send" data-id="'+esc(e.id)+'">💬 واتساب تأكيد / دفع</button>'+
+   '<button class="btn sml primary" data-action="edit" data-id="'+esc(e.id)+'">✏ تعديل الموعد والسعر</button>'+
+   '<button class="btn sml yellow" data-action="send" data-id="'+esc(e.id)+'">💬 '+(e.paymentStatus==='paid'?'تأكيد الموعد':'إرسال رابط الدفع')+'</button>'+
    '<button class="btn sml" data-action="follow" data-id="'+esc(e.id)+'">لم يرد / متابعة</button>'+
    '<button class="btn sml" data-action="calendar" data-id="'+esc(e.id)+'">📅 تذكير التقويم</button>'+
    '<button class="btn sml warn" data-action="delete" data-id="'+esc(e.id)+'">حذف</button></div></article>';
  }).join('');
 }
-const ids=['clientName','clientPhone','dogName','petId','services','preferredDate','preferredTime','finalDate','finalTime','clinic','doctor','price','paymentStatus','paymentLink','status','followUp','notes'];
+const ids=['clientName','clientPhone','dogName','petId','services','preferredDate','preferredTime','finalDate','finalTime','clinic','doctor','price','clinicShare','pawappShare','paymentStatus','paymentLink','status','followUp','notes'];
 function openEdit(e){
  editingId=e?.id||null;$('appointmentForm').reset();$('formError').textContent='';
  $('modalTitle').textContent=e?'تعديل موعد العميل':'إضافة موعد';
