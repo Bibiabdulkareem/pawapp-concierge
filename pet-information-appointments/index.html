@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#003E8E">
+<meta name="robots" content="noindex,nofollow">
+<title>PawApp | Pet Information Appointments</title>
+<style>
+:root{font-family:Tahoma,"Segoe UI",Arial,sans-serif;color-scheme:light;--navy:#003e8e;--deep:#143158;--yellow:#efe30d;--bg:#f4f7fc;--line:#dce5f2;--sub:#58708f;--red:#b73047;--green:#147853;--white:#fff;--shadow:0 8px 28px rgba(0,46,103,.065)}
+*{box-sizing:border-box}body{background:var(--bg);margin:0;color:var(--deep);font-size:14px;line-height:1.65}button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:var(--navy)}
+.top{background:var(--navy);color:white;padding:17px max(calc((100vw - 1160px)/2),18px);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand h1{font-size:23px;margin:0;line-height:1.35}.brand small{opacity:.83}.top a{color:#fff;text-decoration:none;border:1px solid #ffffff7e;padding:8px 13px;border-radius:10px;font-size:12px}
+.layout{max-width:1160px;margin:auto;padding:21px 16px 70px}
+.notice{background:#fff8de;border:1px solid #eadb9c;padding:13px 16px;border-radius:14px;color:#725607;margin-bottom:17px;font-size:12px}
+.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.toolbar{justify-content:space-between;margin:16px 0;gap:12px}
+.btn{border:1px solid var(--line);color:var(--deep);padding:10px 13px;background:#fff;border-radius:11px;font-weight:700;min-height:41px}
+.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}.btn.yellow{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}
+.btn.warn{color:var(--red);background:#fff4f5}.btn.sml{font-size:12px;padding:7px 10px;min-height:35px}.btn:hover{filter:brightness(.97)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #95b8f8;outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}.stat{background:white;padding:15px;border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow)}
+.stat span{color:var(--sub);font-size:12px}.stat strong{display:block;font-size:24px;color:var(--navy);margin-top:5px}
+.stat.urgent strong{color:var(--red)}
+.panel{background:white;padding:17px;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;margin-top:15px}
+.panel h2{font-size:17px;color:var(--navy);margin:0}.panel p{color:var(--sub);margin:6px 0 0;font-size:12px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.filters input,.filters select{flex:1;min-width:160px;background:white;border:1px solid var(--line);border-radius:11px;padding:11px}
+.list{display:grid;gap:12px}
+.appointment{border:1px solid var(--line);border-radius:15px;background:white;padding:16px;box-shadow:var(--shadow)}
+.headline{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.client{font-size:17px;font-weight:700;color:var(--navy)}
+.detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 15px;margin:13px 0}
+.detail div{min-width:0}.detail small{display:block;color:var(--sub);font-size:11px}.detail strong{font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.pill{display:inline-flex;border-radius:50px;padding:5px 9px;background:#eaf0fa;color:var(--navy);font-size:11px;font-weight:700}
+.pill.ok{background:#dff6e9;color:#126a40}.pill.bad{background:#ffe7e8;color:#a32c3d}.pill.wait{background:#fff2d5;color:#856004}
+.tags{display:flex;flex-wrap:wrap;gap:6px}.tag{background:#f1f5fb;border:1px solid #e7edf5;border-radius:8px;padding:3px 8px;font-size:11px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #edf1f7;padding-top:12px;margin-top:14px}
+.empty{text-align:center;padding:40px 20px;color:var(--sub);border:1px dashed #bdd0e8;background:white;border-radius:15px}
+dialog{border:0;padding:0;max-height:93dvh;width:min(650px,calc(100vw - 20px));border-radius:17px;box-shadow:0 23px 80px #12294d55}
+dialog::backdrop{background:#09172f85}.modal{padding:20px;overflow:auto;max-height:93dvh}.modal h2{margin:0;color:var(--navy)}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field label{font-size:12px;font-weight:700}.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;min-height:43px;background:#f8faff;color:var(--deep)}
+.field textarea{min-height:76px;resize:vertical}.span2{grid-column:1/-1}.hint{font-size:11px;color:var(--sub)}.error{color:var(--red);font-weight:700;font-size:12px;margin-top:9px}
+hr{border:0;border-top:1px solid var(--line);margin:15px 0}
+.importBox{display:none}.importBox.show{display:block}.importBox textarea{width:100%;min-height:155px;border:1px solid var(--line);border-radius:10px;margin:12px 0 6px;padding:10px}
+.toast{position:fixed;bottom:18px;right:18px;left:18px;max-width:560px;margin:auto;background:var(--deep);color:white;border-radius:12px;padding:12px 15px;z-index:30;text-align:center;display:none}
+.toast.show{display:block}
+.footer{color:var(--sub);font-size:11px;text-align:center;margin:27px 0}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:last-child{grid-column:1/-1}.detail{grid-template-columns:1fr 1fr}.top{padding:15px 18px}.brand h1{font-size:20px}}
+@media(max-width:440px){.formGrid{grid-template-columns:1fr}.span2{grid-column:auto}.detail{grid-template-columns:1fr 1fr}.headline{flex-direction:column}.filters{display:grid}.filters input,.filters select{width:100%}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div class="brand"><h1>🐾 Pet Information | المواعيد</h1><small>شركة باو أب — لوحة متابعة خفيفة ومستقلة</small></div>
+ <a href="../pet-information/" target="_blank" rel="noopener">فتح نموذج العميل ↗</a>
+</header>
+<main class="layout">
+<div class="notice"><b>مهم:</b> هذي نسخة بسيطة بدون باك إند. المواعيد تنحفظ <b>على هذا المتصفح وهذا الجهاز فقط</b>، وما تنتقل تلقائياً من نموذج العميل أو نظام الكونسيرج. أضيفي الطلب يدوياً أو الصقي رسالة الواتساب، واحفظي نسخة احتياطية. التذكيرات داخل الصفحة تشتغل وهي مفتوحة، وتقدرين تضيفين الموعد لتقويم الجهاز للتنبيه حتى وهي مقفلة. ما نحفظ الرقم المدني هنا.</div>
+<section class="stats" id="stats" aria-label="إحصائيات المواعيد"></section>
+<div class="row toolbar">
+ <div class="row"><button class="btn yellow" id="addBtn">+ إضافة موعد</button><button class="btn primary" id="importToggle">📋 إضافة من رسالة واتساب</button></div>
+ <div class="row"><button class="btn sml" id="notifBtn">🔔 تنبيه داخل الصفحة</button><button class="btn sml" id="exportBtn">تصدير نسخة احتياطية</button><button class="btn sml" id="restoreBtn">استرجاع نسخة</button><input type="file" accept="application/json,.json" id="restoreFile" hidden></div>
+</div>
+<div class="panel importBox" id="importBox">
+  <div class="row" style="justify-content:space-between"><h2>إضافة طلب من الواتساب</h2><button class="btn sml" id="closeImport">إغلاق</button></div>
+  <p>انسخي رسالة Pet Information اللي وصلت واتساب والصقيها هنا. راح نسحب الاسم والرقم والكلب والخدمات والموعد المطلوب، وبعدها تقدرين تعدلينه. لا نحتفظ بالرقم المدني.</p>
+  <textarea id="waPaste" placeholder="الصقي رسالة شركة باو أب / Pet Information هنا..." aria-label="رسالة الواتساب"></textarea>
+  <div class="row"><button class="btn primary" id="parseBtn">استخراج البيانات وفتح الموعد</button><span class="hint" id="parseFeedback"></span></div>
+</div>
+<section class="panel">
+ <div class="row" style="justify-content:space-between"><div><h2>جدول المواعيد والمتابعات</h2><p>رتّبي الحجز، اكتشفي التداخل، أضيفي السعر والدكتور، وجهّزي رسالة العميل من زر واتساب.</p></div><span class="pill wait" id="dueSummary">—</span></div>
+ <div class="filters"><input id="search" placeholder="بحث بالاسم أو رقم الهاتف أو الدكتور" aria-label="بحث"><select id="statusFilter" aria-label="الحالة"><option value="all">كل الحالات</option><option value="new">جديد</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار العيادة</option><option value="confirmed">مؤكد</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select><select id="dateFilter" aria-label="التاريخ"><option value="all">كل المواعيد</option><option value="today">اليوم</option><option value="week">الأسبوع القادم</option><option value="overdue">متابعة مستحقة</option></select></div>
+ <div class="list" id="appointments"></div>
+</section>
+<p class="footer">Pet Information Appointments • مستقلة عن Booking Concierge • بيانات محلية فقط • بتوقيت الكويت</p>
+</main>
+<dialog id="editor">
+ <div class="modal">
+  <div class="row" style="justify-content:space-between"><h2 id="modalTitle">إضافة موعد</h2><button class="btn sml" id="closeModal" type="button">✕ إغلاق</button></div>
+  <form id="appointmentForm" novalidate>
+   <div class="formGrid">
+    <div class="field"><label for="clientName">اسم العميل *</label><input id="clientName" maxlength="120" required></div>
+    <div class="field"><label for="clientPhone">رقم هاتف العميل *</label><input id="clientPhone" type="tel" inputmode="tel" placeholder="5XXXXXXX" maxlength="18" required></div>
+    <div class="field"><label for="dogName">اسم الكلب</label><input id="dogName" maxlength="100"></div>
+    <div class="field"><label for="petId">عنده Pet ID؟</label><select id="petId"><option value="">غير معروف</option><option value="yes">نعم — أولوية</option><option value="no">لا</option></select></div>
+    <div class="field span2"><label for="services">الخدمات المطلوبة</label><input id="services" placeholder="تطعيم سنوي، مايكروشيب، زيارة منزلية"></div>
+    <div class="field"><label for="preferredDate">تاريخ العميل المفضل *</label><input id="preferredDate" type="date" required></div>
+    <div class="field"><label for="preferredTime">الوقت المفضل *</label><input id="preferredTime" type="time" required></div>
+    <div class="field"><label for="finalDate">تاريخ الموعد بعد التنسيق</label><input id="finalDate" type="date"></div>
+    <div class="field"><label for="finalTime">وقت الموعد بعد التنسيق</label><input id="finalTime" type="time"></div>
+    <div class="field"><label for="clinic">العيادة</label><input id="clinic" maxlength="120"></div>
+    <div class="field"><label for="doctor">الدكتور</label><input id="doctor" maxlength="120"></div>
+    <div class="field"><label for="price">السعر بالدينار الكويتي</label><input id="price" type="number" min="0" step=".001" placeholder="مثلاً 12.000"></div>
+    <div class="field"><label for="paymentStatus">حالة الدفع</label><select id="paymentStatus"><option value="unpaid">غير مدفوع</option><option value="paid">مدفوع (تأكيد يدوي)</option></select></div>
+    <div class="field span2"><label for="paymentLink">رابط الدفع (اختياري)</label><input id="paymentLink" type="url" placeholder="https://..." dir="ltr"><small class="hint">استخدمي رابط الدفع الحقيقي من بوابة الدفع الموجودة عندج، وما يتم إنشاء رابط تلقائياً.</small></div>
+    <div class="field"><label for="status">حالة الطلب</label><select id="status"><option value="new">جديد</option><option value="contacted">تم التواصل</option><option value="waiting">بانتظار تأكيد العيادة</option><option value="confirmed">مؤكد</option><option value="completed">مكتمل</option><option value="no_response">لم يرد</option><option value="cancelled">ملغي</option></select></div>
+    <div class="field"><label for="followUp">ذكّرني بالمتابعة</label><input id="followUp" type="datetime-local"></div>
+    <div class="field span2"><label for="notes">ملاحظات المتابعة (اختياري)</label><textarea id="notes" placeholder="آخر تواصل، موعد الطبيب، ملاحظات العميل..."></textarea></div>
+   </div>
+   <div class="error" id="formError" role="alert"></div>
+   <div class="row" style="margin-top:18px;justify-content:flex-end"><button type="button" class="btn" id="cancelBtn">إلغاء</button><button type="submit" class="btn yellow">حفظ الموعد</button></div>
+  </form>
+ </div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(function(){
+'use strict';
+const KEY='pawapp_pet_information_appointments_local_v1';
+const STATUS={new:'جديد',contacted:'تم التواصل',waiting:'بانتظار العيادة',confirmed:'مؤكد',completed:'مكتمل',no_response:'لم يرد',cancelled:'ملغي'};
+const ACTIVE=['new','contacted','waiting','confirmed','no_response'];
+let entries=load(),editingId=null,preFill=null,lastNotified={};
+const $=id=>document.getElementById(id);
+function load(){try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.filter(x=>x&&typeof x==='object'&&x.id).slice(0,5000):[]}catch(e){return []}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(entries));return true}catch(e){alert('ما قدرت أحفظ البيانات محلياً. تأكدي من مساحة الجهاز وخذي نسخة احتياطية.');return false}}
+function clean(x){return String(x==null?'':x).trim()}
+function esc(s){return clean(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function short(x){return esc(x||'—')}
+function uid(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)}
+function nowKW(){return new Date(Date.now()+3*3600000)}
+function kuwaitDate(d){return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
+function today(){return kuwaitDate(nowKW())}
+function minutes(t){const parts=clean(t).split(':');return Number(parts[0]||0)*60+Number(parts[1]||0)}
+function dateTime(date,time){if(!date||!time)return NaN;return Date.parse(date+'T'+time+':00+03:00')}
+function dateLabel(date,time){if(!date)return 'لم يُحدد';return date+(time?' • '+time:'')}
+function statusPill(s){const cl=s==='confirmed'||s==='completed'?'ok':s==='cancelled'||s==='no_response'?'bad':'wait';return '<span class="pill '+cl+'">'+esc(STATUS[s]||s)+'</span>'}
+function safePhone(s){let p=clean(s).replace(/[^0-9]/g,'');if(p.startsWith('00965'))p=p.slice(2);if(p.startsWith('965')&&p.length===11)p=p.slice(3);return /^[0-9]{8}$/.test(p)?p:''}
+function validPayLink(s){if(!clean(s))return '';try{const u=new URL(s);return u.protocol==='https:'?u.href:''}catch(e){return ''}}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),3500)}
+function dateFor(e){return e.finalDate&&e.finalTime?dateTime(e.finalDate,e.finalTime):dateTime(e.preferredDate,e.preferredTime)}
+function hasFollowupDue(e){return ACTIVE.includes(e.status)&&!!e.followUp&&Date.parse(e.followUp+':00+03:00')<=Date.now()}
+function hasOverlap(a,b){const da=a.finalDate||a.preferredDate,db=b.finalDate||b.preferredDate,ta=a.finalTime||a.preferredTime,tb=b.finalTime||b.preferredTime;if(!da||!db||da!==db||!ta||!tb)return false;return minutes(ta)<minutes(tb)+60&&minutes(tb)<minutes(ta)+60}
+function conflict(e){if(!ACTIVE.includes(e.status))return[];return entries.filter(x=>x.id!==e.id&&ACTIVE.includes(x.status)&&hasOverlap(x,e)&&(!e.doctor||!x.doctor||clean(e.doctor).toLowerCase()===clean(x.doctor).toLowerCase()))}
+function stats(){
+ const due=entries.filter(hasFollowupDue).length;
+ const t=today();
+ const day=entries.filter(e=>ACTIVE.includes(e.status)&&(e.finalDate||e.preferredDate)===t).length;
+ const pending=entries.filter(e=>ACTIVE.includes(e.status)&&e.status!=='confirmed').length;
+ const confirmed=entries.filter(e=>e.status==='confirmed').length;
+ const clashes=entries.filter(e=>conflict(e).length>0).length;
+ $('stats').innerHTML=[
+ ['الطلبات الكلية',entries.length,''],['تحتاج متابعة',due,'urgent'],['مواعيد اليوم',day,''],['مؤكدة',confirmed,''],['مواعيد متداخلة',clashes,clashes?'urgent':'']
+ ].map(x=>'<article class="stat '+x[2]+'"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></article>').join('');
+ $('dueSummary').textContent=due?('🔔 '+due+' متابعة مستحقة'):'ماكو متابعات متأخرة';
+}
+function render(){
+ stats();
+ const search=clean($('search').value).toLowerCase(),stat=$('statusFilter').value,filter=$('dateFilter').value;
+ const start=Date.now(),end=start+7*86400000;
+ let rows=entries.filter(e=>{
+ if(stat!=='all'&&e.status!==stat)return false;
+ if(search&&!([e.clientName,e.phone,e.dogName,e.doctor,e.clinic].join(' ').toLowerCase().includes(search)))return false;
+ if(filter==='overdue'&&!hasFollowupDue(e))return false;
+ if(filter==='today'&&(e.finalDate||e.preferredDate)!==today())return false;
+ if(filter==='week'){const tm=dateFor(e);if(!Number.isFinite(tm)||tm<start||tm>end)return false}
+ return true;
+ }).sort((a,b)=>Number(hasFollowupDue(b))-Number(hasFollowupDue(a))||dateFor(a)-dateFor(b)||b.createdAt-a.createdAt);
+ if(!rows.length){$('appointments').innerHTML='<div class="empty">ماكو مواعيد مطابقة للحين. اضغطي «إضافة موعد» أو «إضافة من رسالة واتساب».</div>';return}
+ $('appointments').innerHTML=rows.map(e=>{
+  const conflicts=conflict(e),reminder=hasFollowupDue(e);
+  return '<article class="appointment">'+
+  '<div class="headline"><div><div class="client">'+esc(e.clientName)+(e.petId==='yes'?' ⭐':'')+'</div><div class="hint">'+esc(e.phone)+' • '+esc(e.dogName||'اسم الكلب غير محدد')+'</div></div><div class="row">'+statusPill(e.status)+(reminder?'<span class="pill bad">🔔 متابعة الآن</span>':'')+(conflicts.length?'<span class="pill bad">⚠ تعارض موعد</span>':'')+'</div></div>'+
+  '<div class="detail">'+
+  '<div><small>الموعد المطلوب</small><strong>'+short(dateLabel(e.preferredDate,e.preferredTime))+'</strong></div>'+
+  '<div><small>الموعد المتفق عليه</small><strong>'+short(dateLabel(e.finalDate,e.finalTime))+'</strong></div>'+
+  '<div><small>الدكتور / العيادة</small><strong>'+short([e.doctor,e.clinic].filter(Boolean).join(' — '))+'</strong></div>'+
+  '<div><small>السعر</small><strong>'+(e.price!==''&&e.price!=null?esc(Number(e.price).toFixed(3)+' د.ك'):'لم يُحدد')+'</strong></div>'+
+  '<div><small>الدفع</small><strong>'+(e.paymentStatus==='paid'?'مدفوع (يدوي)':'غير مدفوع')+'</strong></div>'+
+  '<div><small>المتابعة</small><strong>'+short(e.followUp?e.followUp.replace('T',' '):'لا توجد')+'</strong></div>'+
+  '</div>'+
+  (e.services?.length?'<div class="tags">'+e.services.map(s=>'<span class="tag">'+esc(s)+'</span>').join('')+'</div>':'')+
+  (conflicts.length?'<p style="color:var(--red);font-weight:700">⚠ موعد متداخل مع: '+esc(conflicts.map(x=>x.clientName).join('، '))+'</p>':'')+
+  '<div class="actions">'+
+   '<button class="btn sml primary" data-action="edit" data-id="'+esc(e.id)+'">✏ تعديل</button>'+
+   '<button class="btn sml yellow" data-action="send" data-id="'+esc(e.id)+'">💬 واتساب تأكيد / دفع</button>'+
+   '<button class="btn sml" data-action="follow" data-id="'+esc(e.id)+'">لم يرد / متابعة</button>'+
+   '<button class="btn sml" data-action="calendar" data-id="'+esc(e.id)+'">📅 تذكير التقويم</button>'+
+   '<button class="btn sml warn" data-action="delete" data-id="'+esc(e.id)+'">حذف</button></div></article>';
+ }).join('');
+}
+const ids=['clientName','clientPhone','dogName','petId','services','preferredDate','preferredTime','finalDate','finalTime','clinic','doctor','price','paymentStatus','paymentLink','status','followUp','notes'];
+function openEdit(e){
+ editingId=e?.id||null;$('appointmentForm').reset();$('formError').textContent='';
+ $('modalTitle').textContent=e?'تعديل موعد العميل':'إضافة موعد';
+ for(const id of ids){const v=e?.[id];if(v!==undefined&&v!==null)$(id).value=id==='services'?(Array.isArray(v)?v.join('، '):v):v;}
+ $('editor').showModal();$('clientName').focus();
+}
+function saveFromForm(){
+ const phone=safePhone($('clientPhone').value),name=clean($('clientName').value);
+ if(!name||!phone||!$('preferredDate').value||!$('preferredTime').value){$('formError').textContent='لازم اسم العميل ورقم كويتي صحيح وموعد مفضل.';return}
+ if(Boolean($('finalDate').value)!==Boolean($('finalTime').value)){$('formError').textContent='حددي التاريخ والوقت مع بعض للموعد المتفق عليه.';return}
+ const price=clean($('price').value);
+ if(price&&(Number(price)<0||!Number.isFinite(Number(price)))){$('formError').textContent='راجعي السعر.';return}
+ if(clean($('paymentLink').value)&&!validPayLink($('paymentLink').value)){$('formError').textContent='رابط الدفع لازم يكون https:// صحيح.';return}
+ const prior=entries.find(x=>x.id===editingId);
+ const e={
+ id:prior?.id||uid(),createdAt:prior?.createdAt||Date.now(),
+ clientName:name,phone,dogName:clean($('dogName').value),petId:$('petId').value,
+ services:clean($('services').value).split(/[،,\n]/).map(x=>x.trim()).filter(Boolean),
+ preferredDate:$('preferredDate').value,preferredTime:$('preferredTime').value,
+ finalDate:$('finalDate').value,finalTime:$('finalTime').value,
+ clinic:clean($('clinic').value),doctor:clean($('doctor').value),price,
+ paymentStatus:$('paymentStatus').value,paymentLink:validPayLink($('paymentLink').value),
+ status:$('status').value,followUp:$('followUp').value,notes:clean($('notes').value),
+ sourceRef:prior?.sourceRef||preFill?.sourceRef||'',
+ updatedAt:Date.now()
+ };
+ if(prior){entries=entries.map(x=>x.id===e.id?e:x)}else entries.unshift(e);
+ if(!persist())return;
+ preFill=null;$('editor').close();render();
+ const overlaps=conflict(e);
+ toast(overlaps.length?'حفظت الموعد، لكن فيه تعارض مع '+overlaps.map(x=>x.clientName).join('، '):'تم حفظ الموعد على هالجهاز');
+}
+function generateMessage(e,follow=false){
+ const date=e.finalDate||e.preferredDate,time=e.finalTime||e.preferredTime;
+ const price=e.price!==''&&e.price!=null?Number(e.price).toFixed(3)+' د.ك':'سيتم تحديده بعد التنسيق';
+ const paid=e.paymentStatus==='paid';
+ if(follow)return [
+ 'أهلاً '+e.clientName+' 🌷','معاج شركة باو أب (PawApp).',
+ 'نتابع معاك طلب استكمال بيانات الحيوان الأليف للكلب '+(e.dogName||'')+'.',
+ 'الموعد المقترح: '+date+' الساعة '+time+'.',
+ 'نرجو تأكيد تواجدك أو إرسال الوقت المناسب لج، عشان ننسّق مع العيادة.',
+ 'شاكرين تعاونك 🐾'
+ ].join('\n');
+ const lines=[
+ '🐾 *شركة باو أب | تفاصيل موعد Pet Information*','',
+ 'أهلاً '+e.clientName+' 🌷',
+ '• اسم الكلب: '+(e.dogName||'—'),
+ '• الخدمات: '+(e.services?.length?e.services.join('، '):'حسب الطلب'),
+ '• الدكتور: '+(e.doctor||'سيتم تحديده'),
+ '• العيادة: '+(e.clinic||'سيتم تحديدها'),
+ '• التاريخ: '+date,
+ '• الوقت: '+time,
+ '• المبلغ: '+price,
+ ''
+ ];
+ if(paid){lines.push('✅ *تم تسجيل الدفع، وموعدك مؤكد حسب التنسيق مع العيادة.*')}
+ else{lines.push('🟡 *الموعد بانتظار إتمام الدفع والتأكيد النهائي.*');if(e.paymentLink)lines.push('🔗 *رابط الدفع:* '+e.paymentLink);else lines.push('راح نزودك بتفاصيل الدفع بعد الاتفاق.');lines.push('بعد الدفع، يرجى إرسال إشعار الدفع لنا لتأكيد الحجز.')}
+ lines.push('','لأي تعديل على الموعد تواصل معنا على هالرقم. شكراً لاختيارك باو أب 🐾');
+ return lines.join('\n');
+}
+function whatsapp(e,follow=false){
+ const phone=safePhone(e.phone);
+ if(!phone){toast('رقم الهاتف غير صحيح');return}
+ const msg=generateMessage(e,follow);
+ const url='https://wa.me/965'+phone+'?text='+encodeURIComponent(msg);
+ const tab=window.open(url,'_blank','noopener,noreferrer');
+ if(!tab)window.location.href=url;
+ toast('فتحنا رسالة جاهزة. لازم تضغطين إرسال في واتساب بنفسج.');
+}
+function calendar(e){
+ const date=e.finalDate||e.preferredDate,time=e.finalTime||e.preferredTime;
+ if(!date||!time){toast('حددي تاريخ ووقت الموعد قبل إضافة التذكير.');return}
+ const timeCompact=time.replace(':','')+'00';
+ const end=new Date(dateTime(date,time)+60*60000);
+ const endLocal=new Date(end.getTime()+3*3600000);
+ const endStamp=kuwaitDate(endLocal).replace(/-/g,'')+'T'+String(endLocal.getUTCHours()).padStart(2,'0')+String(endLocal.getUTCMinutes()).padStart(2,'0')+'00';
+ const escI=v=>clean(v).replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+ const body=[
+ 'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//PawApp//Pet Information Appointments//AR',
+ 'CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT',
+ 'UID:'+e.id+'@pawapp.net',
+ 'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),
+ 'DTSTART;TZID=Asia/Kuwait:'+date.replace(/-/g,'')+'T'+timeCompact,
+ 'DTEND;TZID=Asia/Kuwait:'+endStamp,
+ 'SUMMARY:'+escI('باو أب - '+e.clientName+' / '+(e.dogName||'Pet Information')),
+ 'DESCRIPTION:'+escI('العميل: '+e.clientName+' - +965 '+e.phone+' - الدكتور: '+(e.doctor||'غير محدد')+' - السعر: '+(e.price||'غير محدد')+' د.ك'),
+ 'BEGIN:VALARM','TRIGGER:-PT60M','ACTION:DISPLAY','DESCRIPTION:تذكير موعد باو أب قبل ساعة','END:VALARM',
+ 'END:VEVENT','END:VCALENDAR'
+ ].join('\r\n');
+ const blob=new Blob([body],{type:'text/calendar;charset=utf-8'}),u=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=u;a.download='PawApp-'+date+'-'+e.id+'.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);
+ toast('حملي ملف التقويم وافتحيه لإضافة الموعد والتنبيه قبل ساعة.');
+}
+function parseWhatsApp(raw){
+ const text=clean(raw);if(!text)throw new Error('الصقي رسالة واتساب أولاً');
+ const lines=text.split(/\r?\n/);
+ const found={services:[]};let section='';
+ for(let line of lines){
+  line=line.replace(/[*_]/g,'').trim();
+  if(/بيانات العميل|Customer Details|Owner information/i.test(line)){section='client';continue}
+  if(/بيانات الكلب|Dog Details|Dog information/i.test(line)){section='dog';continue}
+  if(/الخدمات المطلوبة|Requested Services/i.test(line)){section='services';continue}
+  if(/التطعيمات|Vaccinations|Health records/i.test(line)){section='medical';continue}
+  if(/الموعد المفض|Preferred Appointment|الموعد المطلوب/i.test(line)){section='appointment';continue}
+  const caseNo=line.match(/PawApp Case:\s*(PAW-[0-9]+)/i);if(caseNo)found.sourceRef=caseNo[1];
+  const kv=line.replace(/^[•\-\s]+/,'').match(/^([^:：]+)[:：]\s*(.*)$/);
+  if(!kv){if(section==='services'&&/^[•\-]/.test(line)){const s=line.replace(/^[•\-\s]+/,'');if(s)found.services.push(s)}continue}
+  const key=kv[1].trim().toLowerCase(),v=kv[2].trim();
+  if(section==='client'){
+   if(/^(الاسم|name)$/.test(key))found.clientName=v;
+   if(/^(رقم الهاتف|الهاتف|phone)$/.test(key))found.phone=v;
+  }else if(section==='dog'){
+   if(/^(الاسم|اسم الكلب|dog name|name)$/.test(key))found.dogName=v;
+   if(/pet id|لديه pet id|عنده pet id/i.test(key))found.petId=/نعم|yes/i.test(v)?'yes':/لا|no/i.test(v)?'no':'';
+  }else if(section==='appointment'){
+   if(/^(التاريخ|date)$/.test(key))found.preferredDate=v;
+   if(/^(الوقت|time)$/.test(key))found.preferredTime=v;
+  }
+  if(section==='services'&&/^[•\-]/.test(line)&&!/:/.test(line)){found.services.push(v||line.replace(/^[•\-\s]+/,''))}
+ }
+ if(!found.clientName){const m=text.match(/(?:الاسم|Name):\s*([^\n]+)/);if(m)found.clientName=m[1].trim()}
+ if(!found.phone){const m=text.match(/(?:رقم الهاتف|Phone):\s*(\+?965\s*)?([0-9]{8})/i);if(m)found.phone=m[2]}
+ found.phone=safePhone(found.phone);
+ if(!found.clientName||!found.phone)throw new Error('ما قدرت أستخرج اسم العميل ورقم التلفون. تأكدي إنج نسختي رسالة الطلب كاملة.');
+ if(found.sourceRef&&entries.some(e=>e.sourceRef===found.sourceRef))throw new Error('هذا الطلب موجود بالدفتر مسبقاً. افتحيه وعدليه بدل إضافته مرتين.');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(found.preferredDate||''))found.preferredDate=today();
+ if(!/^\d{2}:\d{2}$/.test(found.preferredTime||''))found.preferredTime='10:00';
+ return found;
+}
+$('addBtn').addEventListener('click',()=>{preFill=null;openEdit()});
+$('closeModal').addEventListener('click',()=>$('editor').close());
+$('cancelBtn').addEventListener('click',()=>$('editor').close());
+$('appointmentForm').addEventListener('submit',e=>{e.preventDefault();saveFromForm()});
+$('search').addEventListener('input',render);$('statusFilter').addEventListener('change',render);$('dateFilter').addEventListener('change',render);
+$('importToggle').addEventListener('click',()=>$('importBox').classList.toggle('show'));
+$('closeImport').addEventListener('click',()=>$('importBox').classList.remove('show'));
+$('parseBtn').addEventListener('click',()=>{
+ try{preFill=parseWhatsApp($('waPaste').value);openEdit();for(const id of ['clientName','dogName','preferredDate','preferredTime','petId'])if(preFill[id])$(id).value=preFill[id];$('clientPhone').value=preFill.phone;$('services').value=preFill.services.join('، ');$('parseFeedback').textContent='تم استخراج البيانات. راجعيها قبل الحفظ.';}
+ catch(e){$('parseFeedback').textContent=e.message}
+});
+$('appointments').addEventListener('click',e=>{
+ const btn=e.target.closest('button[data-action]');if(!btn)return;
+ const ap=entries.find(x=>x.id===btn.dataset.id);if(!ap)return;
+ switch(btn.dataset.action){
+  case 'edit':preFill=null;openEdit(ap);break;
+  case 'send':whatsapp(ap);break;
+  case 'follow':whatsapp(ap,true);break;
+  case 'calendar':calendar(ap);break;
+  case 'delete':if(confirm('تبين تحذفين موعد '+ap.clientName+' من هذا الجهاز؟')){entries=entries.filter(x=>x.id!==ap.id);persist();render()}break;
+ }
+});
+$('exportBtn').addEventListener('click',()=>{
+ const payload=JSON.stringify({app:'pawapp-pet-information-appointments',version:1,exported_at:new Date().toISOString(),appointments:entries},null,2);
+ const blob=new Blob([payload],{type:'application/json'}),url=URL.createObjectURL(blob);const a=document.createElement('a');
+ a.href=url;a.download='pawapp-pet-info-backup-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('تم تنزيل النسخة الاحتياطية.');
+});
+$('restoreBtn').addEventListener('click',()=>$('restoreFile').click());
+$('restoreFile').addEventListener('change',async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{if(file.size>4*1024*1024)throw new Error('الملف كبير أكثر من اللازم.');
+ const payload=JSON.parse(await file.text());
+ if(payload.app!=='pawapp-pet-information-appointments'||!Array.isArray(payload.appointments))throw new Error('الملف مو نسخة صحيحة من دفتر المواعيد.');
+ if(!confirm('استرجاع النسخة راح يستبدل كل المواعيد الموجودة في هذا الجهاز. موافقة؟'))return;
+ entries=payload.appointments.filter(x=>x&&typeof x==='object'&&x.id&&x.clientName&&safePhone(x.phone)).slice(0,5000);
+ if(persist()){render();toast('تم استرجاع المواعيد.')}
+ }catch(err){alert('تعذّر استرجاع النسخة: '+err.message)}finally{e.target.value=''}
+});
+$('notifBtn').addEventListener('click',async()=>{
+ if(!('Notification'in window)){toast('متصفحج ما يدعم تنبيهات الصفحة؛ استخدمي تذكير التقويم.');return}
+ if(Notification.permission==='denied'){toast('التنبيهات مرفوضة في إعدادات المتصفح؛ استخدمي التقويم.');return}
+ const p=await Notification.requestPermission();
+ toast(p==='granted'?'تم تفعيل تنبيهات الصفحة أثناء فتحها.':'التنبيهات مو مفعلة؛ استخدمي تذكير التقويم.');
+});
+function alertDue(){
+ const due=entries.filter(hasFollowupDue);
+ if(!due.length)return;
+ for(const e of due){
+ if(lastNotified[e.id]===e.followUp)continue;
+ lastNotified[e.id]=e.followUp;
+ if('Notification'in window&&Notification.permission==='granted'){
+ try{new Notification('PawApp • متابعة مستحقة',{body:e.clientName+' — '+(e.dogName||'')+' — '+e.phone,tag:'pawapp-pet-'+e.id})}catch(err){}
+ }
+ }
+}
+render();alertDue();setInterval(()=>{render();alertDue()},60000);
+window.addEventListener('storage',e=>{if(e.key===KEY){entries=load();render()}});
+})();
+</script>
+</body></html>
