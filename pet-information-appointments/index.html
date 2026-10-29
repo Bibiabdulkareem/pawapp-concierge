@@ -61,7 +61,7 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <div class="field full"><label for="paymentLink">رابط الدفع *</label><input id="paymentLink" type="url" placeholder="https://..." dir="ltr"></div>
 <div class="field full"><label for="notes">ملاحظات الموظفة</label><textarea id="notes" maxlength="1200"></textarea></div>
 </div><p class="error" id="editError"></p>
-<div class="row start"><button type="submit" id="saveOnly">حفظ فقط</button><button class="gold" type="button" id="saveSend">💬 حفظ وإرسال رابط الدفع</button></div></form></div></dialog>
+<div class="row start"><button type="submit" id="saveOnly">حفظ الموعد وتحديث الكونسيرج</button><button class="gold" type="button" id="saveSend">💬 حفظ وإرسال رابط الدفع</button></div></form></div></dialog>
 <dialog id="messageDialog"><div class="modal"><div class="row"><h2>رسالة واتساب جاهزة</h2><button type="button" id="closeMessage">إغلاق</button></div>
 <p class="notice">افتحي من WhatsApp Business مال شركة باو أب. الرابط يحدد المستلم فقط ولا يحدد رقم المرسل. الإرسال يدوي من حساب الشركة.</p>
 <p id="recipient" class="hint"></p><div class="field"><textarea id="messageText"></textarea></div><div class="row start"><button class="gold" id="openBusiness">فتح WhatsApp Business</button><button id="copyMessage">نسخ الرسالة</button><button id="openWhatsApp">فتح واتساب</button></div></div></dialog>
@@ -137,7 +137,7 @@ function render(){
    '<div class="grid"><div class="cell"><small>الخدمات المطلوبة</small><b>'+esc(service||'—')+'</b></div><div class="cell"><small>الموعد</small><b>'+esc((v.finalDate||v.preferredDate||'—')+' '+(v.finalTime||v.preferredTime||''))+'</b></div>'+
    '<div class="cell"><small>العيادة / الدكتور</small><b>'+esc([v.clinic,v.doctor].filter(Boolean).join(' — ')||'لم يحدد')+'</b></div><div class="cell"><small>السعر الكامل للعميل</small><b>'+esc(money(v.price))+'</b></div></div>'+
    '<div class="hint">الكونسيرج: '+(v.crmSyncStatus==='synced'?'تم تحديث السعر ✓':'يحتاج ربط السعر / مراجعة')+'</div><div class="actions"><button class="primary" data-edit="'+esc(v.id)+'">✏ تعديل الموعد والسعر</button>'+
-   (s==='awaiting_payment'?'<button class="gold" data-paid="'+esc(v.id)+'">✅ تأكيد وصول الدفع</button><button data-send="'+esc(v.id)+'">إعادة رابط الدفع</button>':s==='confirmed'?'<button data-send="'+esc(v.id)+'">💬 رسالة التأكيد</button><button data-calendar="'+esc(v.id)+'">📅 التقويم</button>':'')+
+   (s==='awaiting_payment'?'<button class="gold" data-paid="'+esc(v.id)+'">✅ تأكيد وصول الدفع وتحديث الكونسيرج</button><button data-send="'+esc(v.id)+'">إعادة رابط الدفع</button>':s==='confirmed'?'<button data-send="'+esc(v.id)+'">💬 رسالة التأكيد</button><button data-calendar="'+esc(v.id)+'">📅 التقويم</button>':'')+
    '</div><details><summary>بيانات العميل والمبالغ الداخلية</summary><p class="hint">المنطقة: '+esc(v.area)+' • العنوان: '+esc(v.address)+' • السلالة: '+esc(v.breed)+' • العمر: '+esc(v.petAge)+'</p><p class="hint">Pet ID: '+esc(v.petId)+' • المايكروشيب: '+esc(v.micro)+' • السنوي: '+esc(v.annual)+' • السعار: '+esc(v.rabies)+' • آخر تطعيم: '+esc(v.vaccineDate)+'</p><p>ملاحظات العميل: '+esc(v.originalNotes)+'</p><p>ملاحظات الموظفة: '+esc(v.notes)+'</p><p>العيادة: '+esc(money(v.clinicShare))+' • باو أب: '+esc(money(v.pawappShare))+'</p></details></article>';
  }).join(''):'<p class="hint">ماكو طلبات حالياً. طلبات نموذج Pet Information الجديد تظهر هنا تلقائياً.</p>';
 }
