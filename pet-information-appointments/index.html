@@ -28,7 +28,7 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <h2>دخول لوحة المواعيد</h2>
 <p class="hint">بإيميل شركة باو أب. بعد أول دخول ناجح، يظل محفوظ بنفس المتصفح بدون ما تحتاجين تسجلين كل مرة.</p>
 <form id="loginForm" class="formgrid">
- <div class="field"><label for="email">إيميل باو أب</label><input id="email" type="email" value="bibi@pawapp.net" autocomplete="username" required readonly></div>
+ <div class="field"><label for="email">إيميل باو أب</label><input id="email" type="email" value="bibi@pawapp.net" autocomplete="username" required></div>
  <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" minlength="8" required></div>
  <div class="full row start">
  <button type="submit" class="primary" id="loginBtn">دخول</button>
@@ -52,12 +52,12 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <form id="editForm"><div class="formgrid">
 <div class="field"><label for="date">تاريخ الموعد *</label><input id="date" type="date" required></div>
 <div class="field"><label for="time">الوقت *</label><input id="time" type="time" required></div>
-<div class="field"><label for="clinic">اسم العيادة *</label><input id="clinic" required maxlength="120"></div>
+<div class="field"><label for="crmProvider">العيادة / مقدم الخدمة في الكونسيرج *</label><select id="crmProvider" required><option value="">جاري تحميل الجهات...</option></select></div><div class="field"><label for="crmService">الخدمة المسجلة لدى العيادة *</label><select id="crmService" required><option value="">اختاري العيادة أولاً</option></select></div><div class="field"><label for="clinic">اسم العيادة</label><input id="clinic" readonly required maxlength="120"></div>
 <div class="field"><label for="doctor">اسم الدكتور *</label><input id="doctor" required maxlength="120"></div>
 <div class="field"><label for="price">السعر الكامل للعميل د.ك *</label><input id="price" type="number" min="0" step=".001" required></div>
 <div class="field"><label for="clinicShare">مبلغ العيادة (داخلي)</label><input id="clinicShare" type="number" min="0" step=".001"></div>
 <div class="field"><label for="pawappShare">حصة باو أب (داخلي)</label><input id="pawappShare" type="number" min="0" step=".001"></div>
-<div class="field full"><span class="split" id="split"></span></div>
+<div class="field full"><span class="split" id="split"></span><p class="hint">المطلوب: السعر الكامل = حصة باو أب + حصة العيادة. جهة الدفع الافتراضية لطلبات Pet Information هي PawApp بعد التحقق من وصول المبلغ.</p><p id="crmSyncBanner" class="hint"></p></div>
 <div class="field full"><label for="paymentLink">رابط الدفع *</label><input id="paymentLink" type="url" placeholder="https://..." dir="ltr"></div>
 <div class="field full"><label for="notes">ملاحظات الموظفة</label><textarea id="notes" maxlength="1200"></textarea></div>
 </div><p class="error" id="editError"></p>
@@ -77,7 +77,41 @@ const config={
 };
 const app=initializeApp(config,"pawapp-pet-staff-staging");
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
-let all=[],current=null,recipient=null,unsubscribe=null;
+let all=[],current=null,recipient=null,unsubscribe=null,crmCatalog={providers:[],services:[]};
+const CRM_SYNC_ENDPOINT="https://faireklbtnbcvvgiyyxd.supabase.co/functions/v1/crm-live-pet-appointments";
+const STAFF_EMAILS=new Set(["bibi@pawapp.net","habeba@pawapp.net","heba@pawapp.net"]);
+async function crmCall(action,appointmentId="",requestId=crypto.randomUUID()){
+ const user=auth.currentUser;
+ if(!user||!user.emailVerified||!STAFF_EMAILS.has(String(user.email||"").toLowerCase()))throw Error("حساب الموظفة غير مصرح له.");
+ const token=await user.getIdToken();
+ const res=await fetch(CRM_SYNC_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({action,appointmentId,requestId})});
+ const data=await res.json().catch(()=>({error:"invalid_response"}));
+ if(!res.ok||!data.ok)throw Error("تعذر تحديث الكونسيرج: "+String(data.details||data.error||res.status));
+ return data;
+}
+async function loadCrmCatalog(){
+ const data=await crmCall("catalog");crmCatalog={providers:data.providers||[],services:data.services||[]};
+ if(current)fillCrmSelectors(current);
+}
+function fillCrmSelectors(v){
+ const p=$("crmProvider"),s=$("crmService");
+ const opts=crmCatalog.providers.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
+ p.innerHTML='<option value="">اختاري العيادة / الشركة</option>'+opts;
+ p.value=v?.crmProviderId||"";
+ populateCrmService(v?.crmServiceId||"");
+}
+function populateCrmService(selected=""){
+ const pid=$("crmProvider").value,p=crmCatalog.providers.find(x=>x.id===pid);
+ $("clinic").value=p?.name||"";
+ const services=crmCatalog.services.filter(x=>x.provider_id===pid);
+ $("crmService").innerHTML='<option value="">اختاري الخدمة</option>'+services.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');
+ $("crmService").value=selected;
+}
+function toMillis(value){
+ const s=clean(value);if(!/^\d+(?:\.\d{1,3})?$/.test(s))return null;
+ const [a,b=""]=s.split(".");return Number(a)*1000+Number((b+"000").slice(0,3));
+}
+
 const clean=v=>String(v==null?"":v).trim(),esc=v=>clean(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const phone=v=>{let n=clean(v).replace(/\D/g,"");if(n.length===11&&n.startsWith("965"))n=n.slice(3);return /^\d{8}$/.test(n)?n:""};
 const money=v=>v!==''&&v!=null&&Number.isFinite(Number(v))?Number(v).toFixed(3)+' د.ك':'—';
@@ -102,7 +136,7 @@ function render(){
   return '<article class="entry"><div class="row"><div><h3>'+esc(v.clientName)+(v.petId==='yes'?' ⭐':'')+'</h3><span class="hint">+965 '+esc(v.phone)+' • '+esc(v.dogName)+'</span></div><span class="label '+(s==='confirmed'?'done':s==='awaiting_payment'?'wait':'')+'">'+stateName[s]+'</span></div>'+
    '<div class="grid"><div class="cell"><small>الخدمات المطلوبة</small><b>'+esc(service||'—')+'</b></div><div class="cell"><small>الموعد</small><b>'+esc((v.finalDate||v.preferredDate||'—')+' '+(v.finalTime||v.preferredTime||''))+'</b></div>'+
    '<div class="cell"><small>العيادة / الدكتور</small><b>'+esc([v.clinic,v.doctor].filter(Boolean).join(' — ')||'لم يحدد')+'</b></div><div class="cell"><small>السعر الكامل للعميل</small><b>'+esc(money(v.price))+'</b></div></div>'+
-   '<div class="actions"><button class="primary" data-edit="'+esc(v.id)+'">✏ تعديل الموعد والسعر</button>'+
+   '<div class="hint">الكونسيرج: '+(v.crmSyncStatus==='synced'?'تم تحديث السعر ✓':'يحتاج ربط السعر / مراجعة')+'</div><div class="actions"><button class="primary" data-edit="'+esc(v.id)+'">✏ تعديل الموعد والسعر</button>'+
    (s==='awaiting_payment'?'<button class="gold" data-paid="'+esc(v.id)+'">✅ تأكيد وصول الدفع</button><button data-send="'+esc(v.id)+'">إعادة رابط الدفع</button>':s==='confirmed'?'<button data-send="'+esc(v.id)+'">💬 رسالة التأكيد</button><button data-calendar="'+esc(v.id)+'">📅 التقويم</button>':'')+
    '</div><details><summary>بيانات العميل والمبالغ الداخلية</summary><p class="hint">المنطقة: '+esc(v.area)+' • العنوان: '+esc(v.address)+' • السلالة: '+esc(v.breed)+' • العمر: '+esc(v.petAge)+'</p><p class="hint">Pet ID: '+esc(v.petId)+' • المايكروشيب: '+esc(v.micro)+' • السنوي: '+esc(v.annual)+' • السعار: '+esc(v.rabies)+' • آخر تطعيم: '+esc(v.vaccineDate)+'</p><p>ملاحظات العميل: '+esc(v.originalNotes)+'</p><p>ملاحظات الموظفة: '+esc(v.notes)+'</p><p>العيادة: '+esc(money(v.clinicShare))+' • باو أب: '+esc(money(v.pawappShare))+'</p></details></article>';
  }).join(''):'<p class="hint">ماكو طلبات حالياً. طلبات نموذج Pet Information الجديد تظهر هنا تلقائياً.</p>';
@@ -115,10 +149,10 @@ function startListening(){
   $('connection').textContent='متصل • '+all.length+' طلب في Firebase';render();
  },err=>{$('connection').textContent='تعذر قراءة Firebase: '+err.code;alert('ما قدرنا نقرأ الطلبات. تأكدي من صلاحيات Firestore وأن الإيميل مصرح له. ('+err.code+')')});
 }
-const STAFF_EMAIL='bibi@pawapp.net';
+const allowedEmail=e=>STAFF_EMAILS.has(String(e||"").toLowerCase());
 async function updateAccess(){
  const user=auth.currentUser;
- const verified=!!user && !user.isAnonymous && user.emailVerified && user.email?.toLowerCase()===STAFF_EMAIL;
+ const verified=!!user && !user.isAnonymous && user.emailVerified && allowedEmail(user.email);
  $('loginBox').classList.toggle('hidden',verified);
  $('dashboard').classList.toggle('hidden',!verified);
  $('logout').classList.toggle('hidden',!verified);
@@ -131,6 +165,7 @@ async function updateAccess(){
  }
  $('loginError').textContent='';
  startListening();
+ loadCrmCatalog().catch(err=>{console.warn('CRM catalog unavailable',err);$('connection').textContent='المواعيد متصلة لكن ربط الكونسيرج يحتاج إعادة محاولة';});
 }
 onAuthStateChanged(auth,()=>updateAccess());
 function authError(err){
@@ -147,23 +182,25 @@ function authError(err){
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();
  $('loginError').textContent='';
- const pass=$('password').value;
+ const pass=$('password').value,email=clean($('email').value).toLowerCase();
+ if(!allowedEmail(email)){$('loginError').textContent='هذا الإيميل غير معتمد للوحة المواعيد.';return}
  $('loginBtn').disabled=$('registerBtn').disabled=true;
  try{
   await setPersistence(auth,browserLocalPersistence);
-  await signInWithEmailAndPassword(auth,STAFF_EMAIL,pass);
+  await signInWithEmailAndPassword(auth,email,pass);
   $('password').value='';
  }catch(err){$('loginError').textContent=authError(err)}
  finally{$('loginBtn').disabled=$('registerBtn').disabled=false;}
 });
 $('registerBtn').onclick=async()=>{
  $('loginError').textContent='';
- const pass=$('password').value;
+ const pass=$('password').value,email=clean($('email').value).toLowerCase();
+ if(!allowedEmail(email)){$('loginError').textContent='هذا الإيميل غير معتمد للوحة المواعيد.';return}
  if(pass.length<8){$('loginError').textContent='اكتبي كلمة مرور من 8 رموز على الأقل.';return}
  $('loginBtn').disabled=$('registerBtn').disabled=true;
  try{
   await setPersistence(auth,browserLocalPersistence);
-  const credential=await createUserWithEmailAndPassword(auth,STAFF_EMAIL,pass);
+  const credential=await createUserWithEmailAndPassword(auth,email,pass);
   $('password').value='';
   await sendEmailVerification(credential.user);
   $('loginError').textContent='تم إنشاء الحساب وإرسال رابط تأكيد الإيميل. افتحي البريد أولاً.';
@@ -193,31 +230,41 @@ function openEdit(v){
  $('customerInfo').textContent='العميل: '+v.clientName+' | رقم العميل: +965 '+v.phone+' | الخدمات: '+(Array.isArray(v.services)?v.services.join('، '):v.services||'—');
  for(const [k,val] of Object.entries({date:v.finalDate||v.preferredDate,time:v.finalTime||v.preferredTime,clinic:v.clinic,doctor:v.doctor,price:v.price,clinicShare:v.clinicShare,pawappShare:v.pawappShare,paymentLink:v.paymentLink,notes:v.notes}))$(k).value=val??'';
  $('saveSend').textContent=state(v)==='confirmed'?'حفظ وإعداد رسالة التأكيد':'💬 حفظ وفتح رابط الدفع';
+ fillCrmSelectors(v);$('crmSyncBanner').textContent=v.crmSyncStatus==='synced'?'مرتبط بالكونسيرج ✓':'قبل تأكيد الدفع يلزم حفظ السعر وربطه بالكونسيرج.';
  split();$('editDialog').showModal();
 }
-function split(){const p=clean($('price').value),c=clean($('clinicShare').value),a=clean($('pawappShare').value);const diff=p===''?'—':(Number(p)-Number(c||0)-Number(a||0)).toFixed(3)+' د.ك';$('split').textContent='إجمالي العميل: '+money(p)+' • العيادة: '+money(c)+' • باو أب: '+money(a)+' • غير موزّع: '+diff;}
+function split(){const p=clean($('price').value),c=clean($('clinicShare').value),a=clean($('pawappShare').value);const parts=[toMillis(p),toMillis(c),toMillis(a)];const diff=parts.some(x=>x===null)?'—':((parts[0]-parts[1]-parts[2])/1000).toFixed(3)+' د.ك';$('split').textContent='إجمالي العميل: '+money(p)+' • العيادة: '+money(c)+' • باو أب: '+money(a)+' • غير موزّع: '+diff;}
 for(const id of ['price','clinicShare','pawappShare'])$(id).oninput=split;
+$('crmProvider').onchange=()=>populateCrmService();
+
 $('closeEdit').onclick=()=>$('editDialog').close();
 function validUrl(s){try{const u=new URL(s);return u.protocol==='https:'?u.href:''}catch(e){return ''}}
 async function save(send){
  if(!current)return;
  $('editError').textContent='';
- const date=$('date').value,time=$('time').value,clinic=clean($('clinic').value),doctor=clean($('doctor').value),p=clean($('price').value),c=clean($('clinicShare').value),a=clean($('pawappShare').value),link=clean($('paymentLink').value);
+ const date=$('date').value,time=$('time').value,clinic=clean($('clinic').value),doctor=clean($('doctor').value),p=clean($('price').value),c=clean($('clinicShare').value),a=clean($('pawappShare').value),link=clean($('paymentLink').value),providerId=$('crmProvider').value,serviceId=$('crmService').value;
  const fail=x=>{$('editError').textContent=x;return false};
- if(!date||!time||!clinic||!doctor||p===''||!Number.isFinite(Number(p))||Number(p)<0)return fail('حددي الموعد والدكتور والعيادة والسعر الكامل.');
+ if(!date||!time||!clinic||!doctor||!providerId||!serviceId||p===''||!Number.isFinite(Number(p))||Number(p)<=0)return fail('حددي الموعد والعيادة من القائمة والخدمة والدكتور والسعر الكامل.');
  if([c,a].some(x=>x!==''&&(!Number.isFinite(Number(x))||Number(x)<0)))return fail('المبالغ الداخلية غير صحيحة.');
- if(Number(c||0)+Number(a||0)>Number(p)+.00001)return fail('مبلغ العيادة وباو أب أكبر من السعر الكامل.');
+ if([p,c,a].some(x=>toMillis(x)===null)||toMillis(c)+toMillis(a)!==toMillis(p))return fail('السعر الكامل لازم يساوي حصة العيادة + حصة باو أب بالضبط (3 خانات عشرية).');
  if(link&&!validUrl(link))return fail('رابط الدفع لازم يبدأ https://');
  if(send&&state(current)!=='confirmed'&&!link)return fail('قبل إرسال رسالة الدفع، ضيفي رابط الدفع أولاً.');
  const overlap=all.filter(v=>v.id!==current.id&&state(v)!=='new'&&v.finalDate===date&&v.finalTime===time&&clean(v.doctor).toLowerCase()===doctor.toLowerCase()&&clean(v.clinic).toLowerCase()===clinic.toLowerCase());
  if(overlap.length&&!confirm('⚠ يوجد موعد بنفس العيادة والدكتور والوقت. هل تبين تحفظينه رغم التضارب؟'))return false;
  const status=state(current)==='confirmed'?'confirmed':send?'awaiting_payment':current.status;
- const data={finalDate:date,finalTime:time,clinic,doctor,price:p,clinicShare:c,pawappShare:a,paymentLink:link?validUrl(link):'',notes:clean($('notes').value),status,updatedAt:Date.now(),reminderBeforeDone:false,reminderAfterDone:false};
+ const data={finalDate:date,finalTime:time,clinic,doctor,price:p,clinicShare:c,pawappShare:a,crmProviderId:providerId,crmServiceId:serviceId,crmSyncStatus:'pending',paymentLink:link?validUrl(link):'',notes:clean($('notes').value),status,updatedAt:Date.now(),reminderBeforeDone:false,reminderAfterDone:false};
  try{
   $('saveOnly').disabled=$('saveSend').disabled=true;
   await updateDoc(doc(db,'pet_appointments',current.id),data);
+  try{
+    await crmCall('quote',current.id);
+  }catch(err){
+    $('crmSyncBanner').textContent='البيانات محفوظة بلوحة المواعيد، لكن حسابات الكونسيرج ما تحدثت. لا تأكدي الدفع. أعيدي الحفظ.';
+    return fail(String(err?.message||err));
+  }
+  await updateDoc(doc(db,'pet_appointments',current.id),{crmSyncStatus:'synced',updatedAt:Date.now()});
   $('editDialog').close();
-  if(send)message({...current,...data});
+  if(send)message({...current,...data,crmSyncStatus:'synced'});
   return true;
  }catch(e){return fail('ما انحفظ الموعد في Firebase: '+e.code)}
  finally{$('saveOnly').disabled=$('saveSend').disabled=false;}
@@ -242,9 +289,15 @@ $('copyMessage').onclick=async()=>{try{await navigator.clipboard.writeText($('me
 $('openBusiness').onclick=()=>{if(!recipient)return;const url='whatsapp-business://send?phone=965'+recipient+'&text='+encodeURIComponent($('messageText').value);window.location.href=url};
 $('openWhatsApp').onclick=()=>{if(!recipient)return;window.open('https://wa.me/965'+recipient+'?text='+encodeURIComponent($('messageText').value),'_blank','noopener,noreferrer')};
 async function paid(v){
- if(!confirm('هل تأكدتي فعلاً من وصول المبلغ؟ هذا تأكيد يدوي، مو مربوط ببوابة الدفع.'))return;
- try{await updateDoc(doc(db,'pet_appointments',v.id),{status:'confirmed',paymentStatus:'paid',updatedAt:Date.now(),reminderBeforeDone:false,reminderAfterDone:false});message({...v,status:'confirmed',paymentStatus:'paid'});}
- catch(e){alert('ما قدرنا نسجل التأكيد: '+e.code)}
+ if(!confirm('هل تأكدتي من وصول كامل المبلغ إلى حساب PawApp؟ التأكيد يدوي وبعده تنتقل حصة العيادة للتسويات المفتوحة.'))return;
+ try{
+   if(!v.crmProviderId||!v.crmServiceId)throw Error('افتحي تعديل الموعد وحددي العيادة والخدمة من الكتالوج، ثم احفظي الربط أولاً.');
+   // Ensure quote is already in Concierge before recording a real client receipt.
+   await crmCall('quote',v.id);
+   await crmCall('confirm_payment',v.id);
+   await updateDoc(doc(db,'pet_appointments',v.id),{status:'confirmed',paymentStatus:'paid',crmSyncStatus:'synced',updatedAt:Date.now(),reminderBeforeDone:false,reminderAfterDone:false});
+   message({...v,status:'confirmed',paymentStatus:'paid',crmSyncStatus:'synced'});
+ }catch(e){alert('ما تم تأكيد الدفع في لوحة المواعيد: '+String(e?.message||e)+'\nإذا وصل المبلغ فعلاً، راجعي كونسيرج قبل إعادة التسجيل.');}
 }
 function cal(v){
  const start=when(v);if(!Number.isFinite(start))return alert('الوقت غير محدد');
