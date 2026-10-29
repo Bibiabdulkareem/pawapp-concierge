@@ -4,7 +4,9 @@ service cloud.firestore {
     function staff() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email == "bibi@pawapp.net"
+        && request.auth.token.email in [
+          "bibi@pawapp.net","habeba@pawapp.net","heba@pawapp.net"
+        ]
         && request.auth.token.firebase.sign_in_provider != "anonymous";
     }
     match /pet_appointments/{appointmentId} {
