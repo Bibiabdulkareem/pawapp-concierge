@@ -28,7 +28,7 @@ dialog{border:0;border-radius:15px;box-shadow:0 12px 45px #001b4559;padding:0;wi
 <h2>دخول لوحة المواعيد</h2>
 <p class="hint">بإيميل شركة باو أب. بعد أول دخول ناجح، يظل محفوظ بنفس المتصفح بدون ما تحتاجين تسجلين كل مرة.</p>
 <form id="loginForm" class="formgrid">
- <div class="field"><label for="email">إيميل باو أب</label><input id="email" type="email" value="bibi@pawapp.net" autocomplete="username" required></div>
+ <div class="field"><label for="email">إيميل باو أب</label><input id="email" type="email" value="bibi@pawapp.net" autocomplete="username" required readonly></div>
  <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" minlength="8" required></div>
  <div class="full row start">
  <button type="submit" class="primary" id="loginBtn">دخول</button>
@@ -79,10 +79,10 @@ const app=initializeApp(config,"pawapp-pet-staff-staging");
 const auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
 let all=[],current=null,recipient=null,unsubscribe=null,crmCatalog={providers:[],services:[]};
 const CRM_SYNC_ENDPOINT="https://faireklbtnbcvvgiyyxd.supabase.co/functions/v1/crm-live-pet-appointments";
-const STAFF_EMAILS=new Set(["bibi@pawapp.net","habeba@pawapp.net","heba@pawapp.net"]);
+const STAFF_EMAIL="bibi@pawapp.net"; // Existing shared Firebase staff login
 async function crmCall(action,appointmentId="",requestId=crypto.randomUUID()){
  const user=auth.currentUser;
- if(!user||!user.emailVerified||!STAFF_EMAILS.has(String(user.email||"").toLowerCase()))throw Error("حساب الموظفة غير مصرح له.");
+ if(!user||!user.emailVerified||String(user.email||"").toLowerCase()!==STAFF_EMAIL)throw Error("حساب الموظفة غير مصرح له.");
  const token=await user.getIdToken();
  const res=await fetch(CRM_SYNC_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({action,appointmentId,requestId})});
  const data=await res.json().catch(()=>({error:"invalid_response"}));
@@ -149,7 +149,7 @@ function startListening(){
   $('connection').textContent='متصل • '+all.length+' طلب في Firebase';render();
  },err=>{$('connection').textContent='تعذر قراءة Firebase: '+err.code;alert('ما قدرنا نقرأ الطلبات. تأكدي من صلاحيات Firestore وأن الإيميل مصرح له. ('+err.code+')')});
 }
-const allowedEmail=e=>STAFF_EMAILS.has(String(e||"").toLowerCase());
+const allowedEmail=e=>String(e||"").toLowerCase()===STAFF_EMAIL;
 async function updateAccess(){
  const user=auth.currentUser;
  const verified=!!user && !user.isAnonymous && user.emailVerified && allowedEmail(user.email);
@@ -182,25 +182,23 @@ function authError(err){
 $('loginForm').addEventListener('submit',async e=>{
  e.preventDefault();
  $('loginError').textContent='';
- const pass=$('password').value,email=clean($('email').value).toLowerCase();
- if(!allowedEmail(email)){$('loginError').textContent='هذا الإيميل غير معتمد للوحة المواعيد.';return}
+ const pass=$('password').value;
  $('loginBtn').disabled=$('registerBtn').disabled=true;
  try{
   await setPersistence(auth,browserLocalPersistence);
-  await signInWithEmailAndPassword(auth,email,pass);
+  await signInWithEmailAndPassword(auth,STAFF_EMAIL,pass);
   $('password').value='';
  }catch(err){$('loginError').textContent=authError(err)}
  finally{$('loginBtn').disabled=$('registerBtn').disabled=false;}
 });
 $('registerBtn').onclick=async()=>{
  $('loginError').textContent='';
- const pass=$('password').value,email=clean($('email').value).toLowerCase();
- if(!allowedEmail(email)){$('loginError').textContent='هذا الإيميل غير معتمد للوحة المواعيد.';return}
+ const pass=$('password').value;
  if(pass.length<8){$('loginError').textContent='اكتبي كلمة مرور من 8 رموز على الأقل.';return}
  $('loginBtn').disabled=$('registerBtn').disabled=true;
  try{
   await setPersistence(auth,browserLocalPersistence);
-  const credential=await createUserWithEmailAndPassword(auth,email,pass);
+  const credential=await createUserWithEmailAndPassword(auth,STAFF_EMAIL,pass);
   $('password').value='';
   await sendEmailVerification(credential.user);
   $('loginError').textContent='تم إنشاء الحساب وإرسال رابط تأكيد الإيميل. افتحي البريد أولاً.';
